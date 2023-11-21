@@ -15,7 +15,7 @@ class Login(Resource):
         if not user:
             return {"message": "Email or Password is wrong."}, 401
         token = create_token(user.id)
-        return {"token":token}
+        return {"token":token, "role":user.role}
 
 class Verify_Token(Resource):
     @token_required
