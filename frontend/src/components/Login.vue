@@ -58,7 +58,7 @@ export default {
                     localStorage.setItem("token", k.token)
                     localStorage.setItem("role", k.role)
                     localStorage.removeItem("global_error")
-                    this.$router.push({path:'/dashboard'})
+                    this.$router.push({path:'/'})
                 }
             })
         },
@@ -72,7 +72,7 @@ export default {
             }, 5000);
         }
        if (localStorage.getItem("token")){
-        this.$router.push({path:'/dashboard'})
+        this.$router.push({path:'/'})
        }
     },
 }

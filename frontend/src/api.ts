@@ -43,14 +43,14 @@ class API{
                     localStorage.removeItem("token")
                     localStorage.removeItem("role")
                     localStorage.setItem("global_error", "Session Expired. Please login to continue.")
-                    router.push({path:"/"})
+                    router.push({path:"/login"})
                 } else {
                     localStorage.setItem("user", k.full_name)
                 }
             })
         } else {
             localStorage.setItem("global_error", "Access Denied. Please login to continue.")
-            router.push({path:"/"})
+            router.push({path:"/login"})
         }
     }
 
