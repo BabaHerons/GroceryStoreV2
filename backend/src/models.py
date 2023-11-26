@@ -6,8 +6,9 @@ class User(db.Model):
     id = db.Column(db.Integer(), primary_key = True, nullable=False, unique=True)
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
+    password = db.Column(db.String(500), nullable=False)
     role = db.Column(db.String(50), nullable=False)
+    is_active = db.Column(db.Boolean(), nullable=False)
 
     @property
     def output(self):
@@ -15,6 +16,6 @@ class User(db.Model):
             "id": self.id,
             "full_name": self.full_name,
             "email": self.email,
-            "role": self.role
-            # "password": self.password
+            "role": self.role,
+            "is_active":self.is_active
         }

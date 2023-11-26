@@ -15,5 +15,13 @@ export default {
 </script>
 
 <template>
-    <p>This is the dashboard</p>
+    <div v-if="role == 'admin'">
+        <p>This is the admin dashboard</p>
+    </div>
+    <div v-if="role == 'user'">
+        <p>This is the user dashboard</p>
+    </div>
+    <div v-if="role == 'store_admin'">
+        <p>This is the Store Admin dashboard</p>
+    </div>
 </template>

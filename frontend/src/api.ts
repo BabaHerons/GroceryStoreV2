@@ -22,7 +22,18 @@ class API{
             body:JSON.stringify(json_data)
         }
     }
-
+    private fetch_patch(json_data:any) {
+        return {
+            method:'PATCH',
+            headers: {
+                "Content-Type": "application/json",
+                "token": `${localStorage.getItem("token")}`,
+                "role": `${localStorage.getItem("role")}`,
+            },
+            body:JSON.stringify(json_data)
+        }
+    }
+    
 
     // VERIFY TOKEN
     public verify_token(){
@@ -58,6 +69,26 @@ class API{
     // LOGIN
     public login(json_data:any){
         return fetch(this.BASE_URL + "/login", this.fetch_post(json_data))
+    }
+
+    // SIGN UP FORM
+    public sign_up(json_data:any){
+        return fetch(this.BASE_URL + "/sign-up", this.fetch_post(json_data))
+    }
+
+    // OTP FOR COMPLETING SIGN UP
+    public sign_up_otp(json_data:any){
+        return fetch(this.BASE_URL + "/sign-up", this.fetch_patch(json_data))
+    }
+
+    // EMAIL FOR FORGOT PASSWORD
+    public send_fp_email(json_data:any){
+        return fetch(this.BASE_URL + "/forgot-password", this.fetch_post(json_data))
+    }
+
+    // EMAIL FOR FORGOT PASSWORD
+    public send_fp_otp_pass(json_data:any){
+        return fetch(this.BASE_URL + "/forgot-password", this.fetch_patch(json_data))
     }
 }
 
