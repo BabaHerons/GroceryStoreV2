@@ -1,6 +1,6 @@
 <script lang="ts">
 
-import API from "../api.ts";
+import API from "../api";
 
 export default {
     data: function() {
@@ -75,6 +75,7 @@ export default {
                 } else {
                     localStorage.setItem("token", k.token)
                     localStorage.setItem("role", k.role)
+                    localStorage.setItem("user", k.full_name)
                     localStorage.removeItem("global_error")
                     this.$router.push({path:'/'})
                 }

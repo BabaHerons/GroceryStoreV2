@@ -12,8 +12,6 @@ export default {
 </script>
 
 <template>
-    <nav class="container">
-        This is the Navigation bar
-    </nav>
+    <NavbarVue />
     <RouterView />
 </template>

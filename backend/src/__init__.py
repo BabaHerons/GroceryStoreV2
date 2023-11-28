@@ -15,6 +15,8 @@ CORS(app)
 filepath = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path=filepath)
 
+# key = Fernet.generate_key()
+
 # FOR PASSWORD ENCRYPTION
 FERNET_KEY = bytes(os.environ.get('FERNET_KEY'), "utf-8")
 fernet = Fernet(FERNET_KEY)

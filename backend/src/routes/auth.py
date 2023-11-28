@@ -16,11 +16,14 @@ class Login(Resource):
             return {"message": "User Not Found"}, 404
         
         user_password = args["password"]
-        decoded_password = fernet.decrypt(user.password).decode()
+        try:
+            decoded_password = fernet.decrypt(user.password).decode()
+        except:
+            return {"message":"Invalid Fernet Token"}, 500
         if user_password == decoded_password:
             if user.is_active:
                 token = create_token(user.id, user.role)
-                return {"token":token, "role":user.role}
+                return {"token":token, "role":user.role, "full_name": user.full_name}
             return {"message": "User Inactive. Please contact admin"}, 401
         return {"message": "Wrong Password"}, 401
 
