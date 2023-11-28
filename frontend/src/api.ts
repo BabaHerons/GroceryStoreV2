@@ -90,6 +90,15 @@ class API{
     public send_fp_otp_pass(json_data:any){
         return fetch(this.BASE_URL + "/forgot-password", this.fetch_patch(json_data))
     }
+
+
+    public get_users(){
+        return fetch(this.BASE_URL + "/users", this.fetch_get())
+    }
+
+    public activate_manager(json_data:any){
+        return fetch(this.BASE_URL + "/users", this.fetch_patch(json_data))
+    }
 }
 
 export default new API

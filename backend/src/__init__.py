@@ -45,4 +45,4 @@ db = SQLAlchemy(app)
 mail = Mail(app)
 
 # IMPORTING ALL THE ENDPOINTS
-from src.routes import auth, user
+from src.routes import auth, user, category

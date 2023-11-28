@@ -19,3 +19,19 @@ class User(db.Model):
             "role": self.role,
             "is_active":self.is_active
         }
+
+class Category(db.Model):
+    __tablename__ = 'category'
+    id = db.Column(db.Integer(), primary_key = True, nullable=False, unique=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    is_active = db.Column(db.Boolean(), nullable=False)
+
+    @property
+    def output(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "is_active":self.is_active
+        }

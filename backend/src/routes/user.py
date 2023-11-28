@@ -12,6 +12,7 @@ otp_args = args(["otp", "email", "password"])
 otp_request_args = args(["email"])
 signUp_args = args(["full_name", "email", "password", "role"])
 signUp_otp_args = args(["otp"])
+activate_sm_args = args(["user_id","is_active"])
 
 session_dict = {}
 
@@ -19,12 +20,35 @@ class UserEndpoint(Resource):
     @token_required
     def get(self):
         if "id" in request.args:
-            User = User.query.filter_by(id = request.args['id']).first()
-            if not User:
+            user = User.query.filter_by(id = request.args['id']).first()
+            if not user:
                 return {"message": "User not found."}, 404
-            return User.output
-        Users = [i.output for i in User.query.all()]
-        return Users
+            return user.output
+        elif "role" in request.headers:
+            role = request.headers["role"]
+            if role == "admin":
+                Users = [i.output for i in User.query.all()]
+                return Users
+            return {"message":"Access Denied"}, 401
+        return {"message":"Please provide user ID"}, 401
+
+    @token_required
+    def patch(self):
+        if "role" in request.headers:
+            role = request.headers["role"]
+            if role == "admin":
+                args = activate_sm_args.parse_args()
+                user = User.query.filter_by(id = args['user_id']).first()
+                if not user:
+                    return {"message": "User not found."}, 404
+                if args['is_active']:
+                    user.is_active = True
+                else:
+                    user.is_active = False
+                db.session.add(user)
+                db.session.commit()
+                return {"message":"Edit Successfull."}
+        return {"message":"Access Denied"}, 401
 
 class Sign_Up(Resource):
     def post(self):
