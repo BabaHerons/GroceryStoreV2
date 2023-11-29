@@ -23,7 +23,7 @@ class Login(Resource):
         if user_password == decoded_password:
             if user.is_active:
                 token = create_token(user.id, user.role)
-                return {"token":token, "role":user.role, "full_name": user.full_name}
+                return {"token":token, "role":user.role, "full_name": user.full_name, "user_id":user.id}
             return {"message": "User Inactive. Please contact admin"}, 401
         return {"message": "Wrong Password"}, 401
 

@@ -76,6 +76,7 @@ export default {
                     localStorage.setItem("token", k.token)
                     localStorage.setItem("role", k.role)
                     localStorage.setItem("user", k.full_name)
+                    localStorage.setItem("user_id", k.user_id)
                     localStorage.removeItem("global_error")
                     this.$router.push({path:'/'})
                 }

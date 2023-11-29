@@ -8,6 +8,7 @@ class API{
             headers: {
                 "token": `${localStorage.getItem("token")}`,
                 "role": `${localStorage.getItem("role")}`,
+                "user-id": `${localStorage.getItem("user_id")}`
             }
         }
     }
@@ -18,6 +19,7 @@ class API{
                 "Content-Type": "application/json",
                 "token": `${localStorage.getItem("token")}`,
                 "role": `${localStorage.getItem("role")}`,
+                "user-id": `${localStorage.getItem("user_id")}`
             },
             body:JSON.stringify(json_data)
         }
@@ -29,6 +31,7 @@ class API{
                 "Content-Type": "application/json",
                 "token": `${localStorage.getItem("token")}`,
                 "role": `${localStorage.getItem("role")}`,
+                "user-id": `${localStorage.getItem("user_id")}`
             },
             body:JSON.stringify(json_data)
         }
@@ -53,6 +56,7 @@ class API{
                     localStorage.removeItem("user")
                     localStorage.removeItem("token")
                     localStorage.removeItem("role")
+                    localStorage.removeItem("user_id")
                     localStorage.setItem("global_error", "Session Expired. Please login to continue.")
                     router.push({path:"/login"})
                 } else {
@@ -86,18 +90,39 @@ class API{
         return fetch(this.BASE_URL + "/forgot-password", this.fetch_post(json_data))
     }
 
-    // EMAIL FOR FORGOT PASSWORD
+    // CREATE NEW PASSWORD
     public send_fp_otp_pass(json_data:any){
         return fetch(this.BASE_URL + "/forgot-password", this.fetch_patch(json_data))
     }
 
-
+    // USERS
     public get_users(){
         return fetch(this.BASE_URL + "/users", this.fetch_get())
     }
 
+    // STORE/INVENTORY MANAGER ACTIVATION
     public activate_manager(json_data:any){
         return fetch(this.BASE_URL + "/users", this.fetch_patch(json_data))
+    }
+
+    // GET ALL CATEGORIES
+    public get_categories(){
+        return fetch(this.BASE_URL + "/category", this.fetch_get())
+    }
+
+    // GET A CATEGORY
+    public get_category(id:any){
+        return fetch(this.BASE_URL + `/category?id=${id}`, this.fetch_get())
+    }
+
+    // CREATE A CATEGORY
+    public post_category(json_data:any){
+        return fetch(this.BASE_URL + "/category", this.fetch_post(json_data))
+    }
+
+    // EDIT A CATEGORY
+    public patch_category(json_data:any){
+        return fetch(this.BASE_URL + "/category", this.fetch_patch(json_data))
     }
 }
 

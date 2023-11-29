@@ -10,6 +10,7 @@ export default {
             localStorage.removeItem("token")
             localStorage.removeItem("role")
             localStorage.removeItem("user")
+            localStorage.removeItem("user_id")
             this.$router.push({path:'/login'})
         }
     },

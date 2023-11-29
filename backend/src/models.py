@@ -10,6 +10,9 @@ class User(db.Model):
     role = db.Column(db.String(50), nullable=False)
     is_active = db.Column(db.Boolean(), nullable=False)
 
+    # categories = db.relationship("Category", back_populates="user")
+    # categories_name = db.relationship("Category", backref="user")
+
     @property
     def output(self):
         return {
@@ -26,6 +29,8 @@ class Category(db.Model):
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500), nullable=False)
     is_active = db.Column(db.Boolean(), nullable=False)
+    created_by = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=False)
+    created_by_name = db.Column(db.String(100), db.ForeignKey('user.full_name'), nullable=False)
 
     @property
     def output(self):
@@ -33,5 +38,29 @@ class Category(db.Model):
             "id": self.id,
             "title": self.title,
             "description": self.description,
-            "is_active":self.is_active
+            "is_active":self.is_active,
+            "created_by": self.created_by,
+            "created_by_name": self.created_by_name,
+        }
+
+class CategoryChangeRequest(db.Model):
+    __tablename__ = "category_change_request"
+    id = db.Column(db.Integer(), primary_key = True, nullable=False, unique=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    created_by = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=False)
+    created_by_name = db.Column(db.String(100), db.ForeignKey('user.full_name'), nullable=False)
+    for_category = db.Column(db.Integer(), db.ForeignKey("category.id"), nullable=False)
+    request_type = db.Column(db.String(100), nullable=False)  # edit, delete
+    status = db.Column(db.String(100), nullable=False)        # approved, declined, pending
+
+    @property
+    def output(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "is_active":self.is_active,
+            "created_by": self.created_by,
+            "created_by_name": self.created_by_name,
         }
