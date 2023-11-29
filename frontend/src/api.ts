@@ -36,6 +36,28 @@ class API{
             body:JSON.stringify(json_data)
         }
     }
+    private fetch_put(json_data:any) {
+        return {
+            method:'PUT',
+            headers: {
+                "Content-Type": "application/json",
+                "token": `${localStorage.getItem("token")}`,
+                "role": `${localStorage.getItem("role")}`,
+                "user-id": `${localStorage.getItem("user_id")}`
+            },
+            body:JSON.stringify(json_data)
+        }
+    }
+    private fetch_delete() {
+        return {
+            method:'DELETE',
+            headers: {
+                "token": `${localStorage.getItem("token")}`,
+                "role": `${localStorage.getItem("role")}`,
+                "user-id": `${localStorage.getItem("user_id")}`
+            }
+        }
+    }
     
 
     // VERIFY TOKEN
@@ -121,8 +143,18 @@ class API{
     }
 
     // EDIT A CATEGORY
-    public patch_category(json_data:any){
-        return fetch(this.BASE_URL + "/category", this.fetch_patch(json_data))
+    public put_category(json_data:any){
+        return fetch(this.BASE_URL + "/category", this.fetch_put(json_data))
+    }
+
+    // APROOVE A CATEGORY
+    public patch_category_approve(id:any, json_data:any = null){
+        return fetch(this.BASE_URL + `/category?id=${id}`, this.fetch_patch(json_data))
+    }
+
+    // DELETE A CATEGORY
+    public delete_category(id:any){
+        return fetch(this.BASE_URL + `/category?id=${id}`, this.fetch_delete())
     }
 }
 

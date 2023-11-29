@@ -45,7 +45,7 @@ class CategoryEndpoint(Resource):
         return {"message":"Not Allowed"}, 401
     
     @token_required
-    def patch(self):
+    def put(self):
         args = category_patch_args.parse_args()
         if "role" in request.headers:
             role = request.headers["role"]
@@ -58,6 +58,35 @@ class CategoryEndpoint(Resource):
                 db.session.add(cat)
                 db.session.commit()
                 return {"message":"Added successfully"}
+        return {"message":"Not Allowed"}, 401
+    
+    @token_required
+    def patch(self):
+        if "role" in request.headers and "id" in request.args:
+            role = request.headers["role"]
+            category_id = request.args["id"]
+            if role == "admin":
+                cat = Category.query.filter_by(id = category_id).first()
+                if not cat:
+                    return {"message":"Category not found."}, 404
+                cat.is_active = True
+                db.session.add(cat)
+                db.session.commit()
+                return {"message":"Added successfully"}
+        return {"message":"Not Allowed"}, 401
+    
+    @token_required
+    def delete(self):
+        if "role" in request.headers and "id" in request.args:
+            role = request.headers["role"]
+            category_id = request.args["id"]
+            if role == "admin":
+                cat = Category.query.filter_by(id = category_id).first()
+                if not cat:
+                    return {"message":"Category not found."}, 404
+                db.session.delete(cat)
+                db.session.commit()
+                return {"message":"Deleted successfully"}
         return {"message":"Not Allowed"}, 401
 
 
