@@ -92,6 +92,7 @@ class API{
     }
 
 
+    // ------------------------LOGIN----------------------------------
     // LOGIN
     public login(json_data:any){
         return fetch(this.BASE_URL + "/login", this.fetch_post(json_data))
@@ -116,7 +117,10 @@ class API{
     public send_fp_otp_pass(json_data:any){
         return fetch(this.BASE_URL + "/forgot-password", this.fetch_patch(json_data))
     }
+    // ---------------------------------------------------------------
 
+    
+    // ------------------------USERS----------------------------------
     // USERS
     public get_users(){
         return fetch(this.BASE_URL + "/users", this.fetch_get())
@@ -126,7 +130,10 @@ class API{
     public activate_manager(json_data:any){
         return fetch(this.BASE_URL + "/users", this.fetch_patch(json_data))
     }
+    // ----------------------------------------------------------------
 
+
+    // ------------------------CATEGORY----------------------------------
     // GET ALL CATEGORIES
     public get_categories(){
         return fetch(this.BASE_URL + "/category", this.fetch_get())
@@ -155,6 +162,24 @@ class API{
     // DELETE A CATEGORY
     public delete_category(id:any){
         return fetch(this.BASE_URL + `/category?id=${id}`, this.fetch_delete())
+    }
+    // -------------------------------------------------------------------
+
+
+    // ------------------------CATEGORY CHANGE REQUEST--------------------
+    // GET ALL CATEGORIES REQUESTS
+    public get_categories_request(){
+        return fetch(this.BASE_URL + "/category-request", this.fetch_get())
+    }
+
+    // ADD A CATEGORY REQIUEST
+    public post_category_request(json_data:any){
+        return fetch(this.BASE_URL + "/category-request", this.fetch_post(json_data))
+    }
+
+    // RESPOND TO CATEGORY REQIUEST
+    public patch_category_request(json_data:any){
+        return fetch(this.BASE_URL + "/category-request", this.fetch_patch(json_data))
     }
 }
 

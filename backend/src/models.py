@@ -10,9 +10,6 @@ class User(db.Model):
     role = db.Column(db.String(50), nullable=False)
     is_active = db.Column(db.Boolean(), nullable=False)
 
-    # categories = db.relationship("Category", back_populates="user")
-    # categories_name = db.relationship("Category", backref="user")
-
     @property
     def output(self):
         return {
@@ -31,6 +28,7 @@ class Category(db.Model):
     is_active = db.Column(db.Boolean(), nullable=False)
     created_by = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=False)
     created_by_name = db.Column(db.String(100), db.ForeignKey('user.full_name'), nullable=False)
+    request_status = db.Column(db.Boolean(), nullable=False, default=False)
 
     @property
     def output(self):
@@ -41,6 +39,7 @@ class Category(db.Model):
             "is_active":self.is_active,
             "created_by": self.created_by,
             "created_by_name": self.created_by_name,
+            "request_status": self.request_status,
         }
 
 class CategoryChangeRequest(db.Model):
@@ -60,7 +59,9 @@ class CategoryChangeRequest(db.Model):
             "id": self.id,
             "title": self.title,
             "description": self.description,
-            "is_active":self.is_active,
+            "for_category":self.for_category,
             "created_by": self.created_by,
             "created_by_name": self.created_by_name,
+            "request_type": self.request_type,
+            "status": self.status,
         }

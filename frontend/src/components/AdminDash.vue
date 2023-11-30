@@ -6,6 +6,7 @@ export default {
     beforeMount(){
         this.get_all_users()
         this.get_all_categories()
+        this.get_pending_category()
     },
     data: () => {
         return {
@@ -28,6 +29,9 @@ export default {
                 created_by_name:""
             },
             selected_category:{} as any,
+            pending_category_list:[] as any[],
+            pending_category:{} as any,
+
         }
     },
     methods: {
@@ -74,6 +78,7 @@ export default {
             })
         },
         get_all_categories(){
+            this.categories_list = []
             API.get_categories()
             .then(response => response.json())
             .then(data => {
@@ -102,7 +107,7 @@ export default {
                 this.category.description = ""
             })
         },
-        patch_category_form(){
+        put_category_form(){
             this.patch_category.loading = true
             let json_data = {
                 "category_id": this.selected_category.id,
@@ -150,6 +155,42 @@ export default {
                     this.get_all_categories()
                 })
             }            
+        },
+        get_pending_category(){
+            this.pending_category_list = []
+            API.get_categories_request()
+            .then(Response => Response.json())
+            .then(data => {
+                let k = data
+                for (let i=0; i<k.length; i++){
+                    if (k[i].status == "pending"){
+                        this.pending_category_list.push(k[i])
+                    }
+                }
+            })
+        },
+        compare_changes(category_id:any){
+            // CURRENT VALUES
+            this.get_category(category_id)
+
+            // REQUESTED VALUES
+            this.pending_category = {}
+            for (let i=0; i<this.pending_category_list.length; i++){
+                if (this.pending_category_list[i].for_category == category_id){
+                    this.pending_category = this.pending_category_list[i]
+                    break
+                }
+            }            
+        },
+        respond_cat_change_request(response:any){
+            this.pending_category.status = response
+            API.patch_category_request(this.pending_category)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                this.get_all_categories()
+                this.get_pending_category()
+            })
         }
     }
 }
@@ -157,6 +198,59 @@ export default {
 
 <template>
     <div class="container pb-2 ">
+        <!-- TABLE FOR PENDING CATEGORY -->
+        <div class="mt-4 mb-4">
+            <div class="d-flex justify-content-between border-bottom border-black">
+                <h2 class="text-secondary">Pending Category Requests</h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>S.No.</th>
+                            <th>Request ID</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th>For Category(ID)</th>
+                            <th>Request Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody v-if="pending_category_list.length > 0">
+                        <tr v-for="cat in pending_category_list">
+                            <td>
+                                {{ pending_category_list.indexOf(cat) + 1 }}
+                            </td>
+                            <td>{{cat.id}}</td>
+                            <td>{{cat.title}}</td>
+                            <td>{{cat.description}}</td>
+                            <td>
+                                <span v-if="cat.status == 'approved'" class="badge rounded-pill text-bg-primary">Approved</span>
+                                <span v-if="cat.status == 'pending'" class="badge rounded-pill text-bg-warning">Pending..</span>
+                                <span v-if="cat.status == 'declined'" class="badge rounded-pill text-bg-danger">Declined</span> <br>
+                            </td>
+                            <td>{{cat.created_by + '-' + cat.created_by_name}}</td>
+                            <td>{{cat.for_category}}</td>
+                            <td class="fw-semibold text-uppercase">
+                                <span v-if="cat.request_type == 'edit'" class="text-primary">{{cat.request_type}}</span>
+                                <span v-else class="text-danger">{{cat.request_type}}</span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill text-bg-secondary" style="cursor: pointer;" v-on:click="compare_changes(cat.for_category)" data-bs-toggle="modal" data-bs-target="#viewRequestCategoryModal">Respond</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody v-else>
+                        <tr>
+                            <td colspan="100" class="text-center text-primary fw-bold"><span>No Pending Requests.</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- TABLE FOR STORE/INVENTORY MANAGER -->
         <div class="mt-4 mb-4">
             <h2 class="text-secondary border-bottom border-black">Store / Inventory Manager</h2>
@@ -189,42 +283,6 @@ export default {
                                     <span class="badge rounded-pill text-bg-danger">Inactive</span> <br>
                                     <span class="badge rounded-pill text-bg-warning" v-on:click="activate_manager(sm.id)" style="cursor: pointer;">Activate Manager</span>
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- TABLE FOR USERS -->
-        <div class="mt-4 mb-4">
-            <h2 class="text-secondary border-bottom border-black">Users</h2>
-            <div style="overflow-x:auto;">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>S.No.</th>
-                            <th>User ID</th>
-                            <th>Full Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="user in user_list">
-                            <td>
-                                {{ user_list.indexOf(user) + 1 }}
-                            </td>
-                            <td>{{user.id}}</td>
-                            <td>{{user.full_name}}</td>
-                            <td>{{user.email}}</td>
-                            <td>{{user.role}}</td>
-                            <td>
-                                <span v-if="user.is_active">
-                                    <span class="badge rounded-pill text-bg-success">Active</span>
-                                </span>
-                                <span v-else class="badge rounded-pill text-bg-danger">Inactive</span>
                             </td>
                         </tr>
                     </tbody>
@@ -282,6 +340,42 @@ export default {
                                         <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
                                     </svg>
                                 </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLE FOR USERS -->
+        <div class="mt-4 mb-4">
+            <h2 class="text-secondary border-bottom border-black">Users</h2>
+            <div style="overflow-x:auto;">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>S.No.</th>
+                            <th>User ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in user_list">
+                            <td>
+                                {{ user_list.indexOf(user) + 1 }}
+                            </td>
+                            <td>{{user.id}}</td>
+                            <td>{{user.full_name}}</td>
+                            <td>{{user.email}}</td>
+                            <td>{{user.role}}</td>
+                            <td>
+                                <span v-if="user.is_active">
+                                    <span class="badge rounded-pill text-bg-success">Active</span>
+                                </span>
+                                <span v-else class="badge rounded-pill text-bg-danger">Inactive</span>
                             </td>
                         </tr>
                     </tbody>
@@ -359,13 +453,62 @@ export default {
                 <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <div v-if="!patch_category.loading">
-                    <button type="button" v-on:click="patch_category_form" class="btn btn-primary btn-block" data-bs-dismiss="modal">Submit</button>                    
+                    <button type="button" v-on:click="put_category_form" class="btn btn-primary btn-block" data-bs-dismiss="modal">Submit</button>                    
                 </div>
                 <button v-else type="button" class="btn btn-outline-primary disabled mb-4">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- VIEW REQUEST CATEGORY MODAL -->
+        <div class="modal fade" id="viewRequestCategoryModal" tabindex="-1" aria-labelledby="registerLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="registerLabel">Details of request</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                <!-- CURRENT VALUES -->
+                <form class=" rounded-2 p-4 border border-2 border-danger mb-4">
+                    <h4>Current Values</h4>
+                    <!-- TITLE INPUT-->
+                    <div class="form-outline mb-4">
+                    <label class="form-label" for="cat_title">Title</label>
+                    <input type="text" v-model="selected_category.title" id="cat_title" class="form-control  border-2 border-danger" placeholder="Enter Title" disabled/>
+                    </div>
+
+                    <!-- DESCRIPTION INPUT-->
+                    <div class="form-outline mb-4">
+                    <label class="form-label" for="cat_desc">Description</label>
+                    <input type="text" v-model="selected_category.description" id="cat_desc" class="form-control border border-2 border-danger" placeholder="Enter Description" disabled/>
+                    </div>  
+                </form>
+
+                <!-- REQUESTED VALUES -->
+                <form class=" rounded-2 p-4 border border-2 border-success ">
+                    <h4>Requested Values</h4>
+                    <!-- TITLE INPUT-->
+                    <div class="form-outline mb-4">
+                    <label class="form-label" for="cat_title">Title</label>
+                    <input type="text" v-model="pending_category.title" id="cat_title" class="form-control border border-2 border-success" placeholder="Enter Title" disabled/>
+                    </div>
+
+                    <!-- DESCRIPTION INPUT-->
+                    <div class="form-outline mb-4">
+                    <label class="form-label" for="cat_desc">Description</label>
+                    <input type="text" v-model="pending_category.description" id="cat_desc" class="form-control border border-2 border-success" placeholder="Enter Description" disabled/>
+                    </div>  
+                </form>
+                </div>
+                <div class="modal-footer">
+                    <button data-bs-dismiss="modal" class="btn btn-danger" v-on:click="respond_cat_change_request('declined')">Decline</button>
+                    <button data-bs-dismiss="modal" class="btn btn-primary" v-on:click="respond_cat_change_request('approved')">Approve</button>
                 </div>
             </div>
             </div>
