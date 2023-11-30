@@ -27,6 +27,7 @@ export default {
             },
             selected_category:{} as any,
             requested_category:{} as any,
+            category_change_history_list:[] as any[]
         }
     },
     methods: {
@@ -45,7 +46,12 @@ export default {
             .then(response => response.json())
             .then(data => {
                 let k = data
-                this.requested_categories_list = k                
+                this.category_change_history_list = k
+                for (let i=0; i<k.length; i++){
+                    if (k[i].status == "pending"){
+                        this.requested_categories_list.push(k[i])
+                    }
+                }
             })
         },
         submit_category_form(){
@@ -77,20 +83,21 @@ export default {
             this.request_category.title = this.selected_category.title
             this.request_category.description = this.selected_category.description
         },
-        request_category_edit(){
+        request_category_edit(request_type:string){
             let json_data = {
                 "for_category": this.selected_category.id,
                 "title": this.request_category.title,
                 "description": this.request_category.description,
                 "created_by": localStorage.getItem("user_id")!,
                 "created_by_name": localStorage.getItem("user")!,
-                "request_type": "edit"
+                "request_type": request_type
             }
             API.post_category_request(json_data)
             .then(Response => Response.json())
             .then(data => {
                 let k = data
                 this.get_all_categories()
+                this.get_all_categories_request()
                 console.log(k);
                 this.request_category.title = ""
                 this.request_category.description = ""
@@ -119,6 +126,7 @@ export default {
         <div class="mt-4 mb-4">
             <div class="d-flex justify-content-between border-bottom border-black">
                 <h2 class="text-secondary">Category Management</h2>
+                <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#historyRequestCategoryModal">View Request History</button>
                 <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#addCategoryModal">Add Category</button>
             </div>
             <div style="overflow-x:auto;">
@@ -221,33 +229,24 @@ export default {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                <!-- ADD CATEGORY FORM -->
-                <form class=" rounded-2 p-4">
-                    <!-- TITLE INPUT-->
-                    <div class="form-outline mb-4">
-                    <label class="form-label" for="cat_title">Title</label>
-                    <input type="text" v-model="request_category.title" id="cat_title" class="form-control" placeholder="Enter Title" />
-                    </div>
+                    <!-- ADD CATEGORY FORM -->
+                    <form class=" rounded-2 p-4">
+                        <!-- TITLE INPUT-->
+                        <div class="form-outline mb-4">
+                        <label class="form-label" for="cat_title">Title</label>
+                        <input type="text" v-model="request_category.title" id="cat_title" class="form-control" placeholder="Enter Title" />
+                        </div>
 
-                    <!-- DESCRIPTION INPUT-->
-                    <div class="form-outline mb-4">
-                    <label class="form-label" for="cat_desc">Description</label>
-                    <input type="text" v-model="request_category.description" id="cat_desc" class="form-control" placeholder="Enter Description" />
-                    </div>  
-                </form>
-
-                <!-- OTP INPUT -->
+                        <!-- DESCRIPTION INPUT-->
+                        <div class="form-outline mb-4">
+                        <label class="form-label" for="cat_desc">Description</label>
+                        <input type="text" v-model="request_category.description" id="cat_desc" class="form-control" placeholder="Enter Description" />
+                        </div>  
+                    </form>
                 </div>
                 <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Request Delete</button>
-                <!-- <div v-if="!request_category.loading"> -->
-                    <button type="button" v-on:click="request_category_edit" class="btn btn-primary btn-block" data-bs-dismiss="modal">Request Edit</button>                    
-                <!-- </div> -->
-                <!-- <button v-else type="button" class="btn btn-outline-primary disabled mb-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </button> -->
+                    <button type="button" v-on:click="request_category_edit('delete')" class="btn btn-danger" data-bs-dismiss="modal">Request Delete</button>
+                    <button type="button" v-on:click="request_category_edit('edit')" class="btn btn-primary btn-block" data-bs-dismiss="modal">Request Edit</button>
                 </div>
             </div>
             </div>
@@ -291,6 +290,57 @@ export default {
                     <input type="text" v-model="requested_category.description" id="cat_desc" class="form-control border border-2 border-success" placeholder="Enter Description" disabled/>
                     </div>  
                 </form>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- CATEGORY REQUEST HISTORY MODAL -->
+        <div class="modal fade" id="historyRequestCategoryModal" tabindex="-1" aria-labelledby="registerLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="registerLabel">Category Change Request History</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div style="overflow-x:auto;">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>S.No.</th>
+                                    <th>Request ID</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Created By</th>
+                                    <th>For Category(ID)</th>
+                                    <th>Request Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="cat in category_change_history_list">
+                                    <td>
+                                        {{ category_change_history_list.indexOf(cat) + 1 }}
+                                    </td>
+                                    <td>{{cat.id}}</td>
+                                    <td>{{cat.title}}</td>
+                                    <td>{{cat.description}}</td>
+                                    <td>
+                                        <span v-if="cat.status == 'approved'" class="badge rounded-pill text-bg-primary">Approved</span>
+                                        <span v-if="cat.status == 'pending'" class="badge rounded-pill text-bg-warning">Pending..</span>
+                                        <span v-if="cat.status == 'declined'" class="badge rounded-pill text-bg-danger">Declined</span> <br>
+                                    </td>
+                                    <td>{{cat.created_by + '-' + cat.created_by_name}}</td>
+                                    <td>{{cat.for_category}}</td>
+                                    <td class="fw-semibold text-uppercase">
+                                        <span v-if="cat.request_type == 'edit'" class="text-primary">{{cat.request_type}}</span>
+                                        <span v-else class="text-danger">{{cat.request_type}}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             </div>

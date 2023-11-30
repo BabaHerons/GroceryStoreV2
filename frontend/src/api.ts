@@ -48,14 +48,16 @@ class API{
             body:JSON.stringify(json_data)
         }
     }
-    private fetch_delete() {
+    private fetch_delete(json_data:any = {}) {
         return {
             method:'DELETE',
             headers: {
+                "Content-Type": "application/json",
                 "token": `${localStorage.getItem("token")}`,
                 "role": `${localStorage.getItem("role")}`,
                 "user-id": `${localStorage.getItem("user_id")}`
-            }
+            },
+            body:JSON.stringify(json_data)
         }
     }
     
@@ -177,9 +179,14 @@ class API{
         return fetch(this.BASE_URL + "/category-request", this.fetch_post(json_data))
     }
 
-    // RESPOND TO CATEGORY REQIUEST
+    // RESPOND TO CATEGORY REQIUEST EDIT
     public patch_category_request(json_data:any){
         return fetch(this.BASE_URL + "/category-request", this.fetch_patch(json_data))
+    }
+
+    // RESPOND TO CATEGORY REQIUEST DELETE
+    public delete_category_request(json_data:any){
+        return fetch(this.BASE_URL + "/category-request", this.fetch_delete(json_data))
     }
 }
 

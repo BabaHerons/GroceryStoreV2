@@ -13,6 +13,8 @@ request_fields = ["for_category", "request_type"] + fields
 request_category_args = args(request_fields)
 request_category_patch_args = args(request_fields + ["id", "status"])
 
+delete_request_category_args = args(["id", "status", "for_category"])
+
 class CategoryEndpoint(Resource):
     @token_required
     def get(self):
@@ -158,7 +160,32 @@ class CategoryRequestEndpoint(Resource):
                 db.session.commit()
                 return {"message":"Action taken succesfully"}
         return {"message":"Not Allowed"}, 401
-
+    
+    @token_required
+    def delete(self):
+        args = delete_request_category_args.parse_args()
+        if "role" in request.headers:
+            role = request.headers["role"]
+            if role =="admin":
+                cat = CategoryChangeRequest.query.filter_by(id = args["id"]).first()
+                if not cat:
+                    return {"message":"Request Category ID is missing."}
+                cat.status = args["status"]
+                db.session.add(cat)
+                db.session.commit()
+                
+                cat = Category.query.filter_by(id = args["for_category"]).first()
+                if not cat:
+                    return {"message":"Category ID is missing."}
+                if args["status"] == "approved":
+                    db.session.delete(cat)
+                    db.session.commit()
+                else:
+                    cat.request_status = False
+                    db.session.add(cat)
+                    db.session.commit()
+                return {"message":"Deleted succesfully"}
+        return {"message":"Not Allowed"}, 401
 
 
 api.add_resource(CategoryEndpoint, "/category")
