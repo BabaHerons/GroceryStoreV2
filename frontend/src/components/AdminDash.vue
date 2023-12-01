@@ -8,6 +8,22 @@ export default {
         this.get_all_categories()
         this.get_pending_category()
     },
+    mounted() {
+        let source = new EventSource("http://localhost:5000/stream")
+        source.addEventListener("greeting", (event:any)=>{
+            let data = JSON.parse(event.data)
+            // console.log(data);
+            this.sse.greeting.push(data.message)
+            // alert("Message from the server: " + data.message)
+        })
+
+        // SSE FOR CATEGORY CHANGE
+        source.addEventListener("cat_req", (event:any) => {
+            const data = JSON.parse(event.data)
+            this.sse.category_request.push(data.message)
+            this.get_pending_category()
+        })
+    },
     data: () => {
         return {
             all_users:[] as any[],
@@ -31,7 +47,11 @@ export default {
             selected_category:{} as any,
             pending_category_list:[] as any[],
             pending_category:{} as any,
-            category_change_history_list:[] as any[]
+            category_change_history_list:[] as any[],
+            sse:{
+                greeting:[] as any[],
+                category_request:[] as any[],
+            },
 
         }
     },
@@ -222,6 +242,14 @@ export default {
 
 <template>
     <div class="container pb-2 ">
+        <div v-for="msg in sse.greeting" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>{{ msg }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div v-for="msg in sse.category_request" class="alert alert-info alert-dismissible fade show" role="alert">
+            <strong>{{ msg }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         <!-- TABLE FOR PENDING CATEGORY -->
         <div class="mt-4 mb-4">
             <div class="d-flex justify-content-between border-bottom border-black">

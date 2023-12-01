@@ -4,6 +4,7 @@ from flask import request
 from src.jwt import token_required
 from src.models import Category, CategoryChangeRequest
 from src.utils import args
+from flask_sse import sse
 
 fields = ["title","description", "created_by", "created_by_name"]
 category_args = args(fields)
@@ -133,6 +134,13 @@ class CategoryRequestEndpoint(Resource):
                 cat.request_status = True
                 db.session.add(cat)
                 db.session.commit()
+
+                # SERVER SIDE EVENTS
+                # (FOR SENDING PUSH NOTIFICATION TO THE ADMIN ABOUT NEW REUEST)
+                store_admin = args["created_by_name"]
+                req_type = args["request_type"]
+                sse.publish({"message":f"Store Admin: {store_admin} has requested {req_type.upper()} for {cat.title}."}, type="cat_req")
+
                 return {"message":"Added successfully"}
         return {"message":"Not Allowed"}, 401
     
@@ -142,11 +150,11 @@ class CategoryRequestEndpoint(Resource):
         if "role" in request.headers:
             role = request.headers["role"]
             if role =="admin":
-                cat = CategoryChangeRequest.query.filter_by(id = args["id"]).first()
-                if not cat:
+                cat_req = CategoryChangeRequest.query.filter_by(id = args["id"]).first()
+                if not cat_req:
                     return {"message":"Request Category ID is missing."}
-                cat.status = args["status"]
-                db.session.add(cat)
+                cat_req.status = args["status"]
+                db.session.add(cat_req)
                 db.session.commit()
                 
                 cat = Category.query.filter_by(id = args["for_category"]).first()
@@ -158,6 +166,14 @@ class CategoryRequestEndpoint(Resource):
                     cat.description = args["description"]
                 db.session.add(cat)
                 db.session.commit()
+
+                # SERVER SIDE EVENTS
+                # (FOR SENDING PUSH NOTIFICATION TO THE ADMIN ABOUT NEW REUEST)
+                req_status = args["status"]
+                sm_id = cat_req.created_by
+                sm_name = cat_req.created_by_name
+                sse.publish({"message":f"Admin has {req_status.upper()} your EDIT request for {cat.title}."}, type=f"{sm_id}-{sm_name}")
+
                 return {"message":"Action taken succesfully"}
         return {"message":"Not Allowed"}, 401
     

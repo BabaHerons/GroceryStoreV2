@@ -7,11 +7,15 @@ from flask_mail import Mail
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet
 from celery import Celery
+from flask_sse import sse
 
 
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
+
+# -------------------FLASK SSE----------------------
+app.register_blueprint(sse, url_prefix="/stream")
 
 filepath = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path=filepath)
@@ -41,14 +45,11 @@ app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_USERNAME")
 
 # -------------------CELERY-----------------------------
+app.config["REDIS_URL"] = "redis://localhost:6379"
 CELERY_CONFIG = {"broker_url":"redis://localhost:6379/1", "result_backend":"redis://localhost:6379/2"}
 
 celery = Celery("Groccery Store Jobs")
 celery.conf.update(CELERY_CONFIG)
-class ContextTask(celery.Task):
-    def __call__(self, *args, **kwargs):
-        with app.app_context():
-            return self.run(*args, **kwargs)
 
 
 db = SQLAlchemy(app)
