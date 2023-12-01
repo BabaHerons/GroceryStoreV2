@@ -6,6 +6,7 @@ import os
 from flask_mail import Mail
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet
+from celery import Celery
 
 
 app = Flask(__name__)
@@ -39,10 +40,19 @@ app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_USERNAME")
 
+# -------------------CELERY-----------------------------
+CELERY_CONFIG = {"broker_url":"redis://localhost:6379/1", "result_backend":"redis://localhost:6379/2"}
+
+celery = Celery("Groccery Store Jobs")
+celery.conf.update(CELERY_CONFIG)
+class ContextTask(celery.Task):
+    def __call__(self, *args, **kwargs):
+        with app.app_context():
+            return self.run(*args, **kwargs)
 
 
 db = SQLAlchemy(app)
 mail = Mail(app)
 
 # IMPORTING ALL THE ENDPOINTS
-from src.routes import auth, user, category
+from src.routes import auth, user, category, test
