@@ -5,6 +5,8 @@ from src.jwt import token_required
 from src.models import Category, CategoryChangeRequest
 from src.utils import args
 from flask_sse import sse
+from time import perf_counter_ns
+from src.custom_cache import get_all_category, get_category_by_store_admin
 
 fields = ["title","description", "created_by", "created_by_name"]
 category_args = args(fields)
@@ -27,10 +29,15 @@ class CategoryEndpoint(Resource):
                     id = request.args["id"]
                     cat = Category.query.filter_by(id = id).first()
                     return cat.output
-                categories = [i.output for i in Category.query.all()]
+                categories = get_all_category()
                 return categories
             elif role == "store_admin":
-                categories = [i.output for i in Category.query.filter_by(created_by=user_id).all()]
+                start = perf_counter_ns()
+                categories = get_category_by_store_admin(user_id)
+                stop = perf_counter_ns()
+                print()
+                print(stop - start)
+                print()
                 return categories
             return {"message":"Not Allowed"}, 401
         return {"message":"Missing values in Headers."}, 400
