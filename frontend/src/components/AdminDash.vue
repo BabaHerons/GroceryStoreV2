@@ -22,6 +22,7 @@ export default {
             const data = JSON.parse(event.data)
             this.sse.category_request.push(data.message)
             this.get_pending_category()
+            this.get_all_categories()
         })
     },
     data: () => {
@@ -51,6 +52,7 @@ export default {
             sse:{
                 greeting:[] as any[],
                 category_request:[] as any[],
+                new_category:[] as any[],
             },
 
         }
@@ -242,13 +244,16 @@ export default {
 
 <template>
     <div class="container pb-2 ">
-        <div v-for="msg in sse.greeting" class="alert alert-warning alert-dismissible fade show" role="alert">
-            <strong>{{ msg }}</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <div v-for="msg in sse.category_request" class="alert alert-info alert-dismissible fade show" role="alert">
-            <strong>{{ msg }}</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <!-- FOR DISPLAYING ANY NOTIFICATION -->
+        <div>
+            <div v-for="msg in sse.greeting" class="alert alert-warning alert-dismissible fade show" role="alert">
+                <strong>{{ msg }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div v-for="msg in sse.category_request" class="alert alert-info alert-dismissible fade show" role="alert">
+                <strong>{{ msg }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         </div>
         <!-- TABLE FOR PENDING CATEGORY -->
         <div class="mt-4 mb-4">

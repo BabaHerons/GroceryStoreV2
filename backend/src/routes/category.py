@@ -1,4 +1,4 @@
-from src import api, db
+from src import api, db, cache
 from flask_restful import Resource
 from flask import request
 from src.jwt import token_required
@@ -6,7 +6,7 @@ from src.models import Category, CategoryChangeRequest
 from src.utils import args
 from flask_sse import sse
 from time import perf_counter_ns
-from src.custom_cache import get_all_category, get_category_by_store_admin
+from src.custom_cache import get_all_category, get_category_by_store_admin, get_all_requested_category, get_all_requested_category_by_store_admin
 
 fields = ["title","description", "created_by", "created_by_name"]
 category_args = args(fields)
@@ -55,6 +55,15 @@ class CategoryEndpoint(Resource):
                 cat = Category(**args)
                 db.session.add(cat)
                 db.session.commit()
+
+                # SENDING NOTIFICATION TO ADMIN ABOUT NEW CATEGORY CREATION
+                if role == "store_admin":
+                    sse.publish({"message":f"Store admin {args['created_by_name']} requested to create a category {args['title']}"}, type="cat_req")
+                
+                # DELETING THE OLD CACHE
+                cache.delete("get_all_category")
+                if role == "store_admin":
+                    cache.delete_memoized(get_category_by_store_admin, args["created_by"])
                 return {"message":"Added successfully"}
         return {"message":"Not Allowed"}, 401
     
@@ -72,6 +81,13 @@ class CategoryEndpoint(Resource):
                             setattr(cat, key, value)
                 db.session.add(cat)
                 db.session.commit()
+
+                 # PUBLISH TO THE STORE ADMIN FOR THE ACTIVATION OF CATEGORY SHE/HE CREATED
+                sse.publish({"message":f"Admin has UPDATED the category {cat.title.upper()}"}, type=f"{cat.created_by}-{cat.created_by_name}")
+
+                # DELETING THE OLD CACHE
+                cache.delete("get_all_category")
+                cache.delete_memoized(get_category_by_store_admin, str(cat.created_by))
                 return {"message":"Added successfully"}
         return {"message":"Not Allowed"}, 401
     
@@ -87,6 +103,13 @@ class CategoryEndpoint(Resource):
                 cat.is_active = True
                 db.session.add(cat)
                 db.session.commit()
+
+                # PUBLISH TO THE STORE ADMIN FOR THE ACTIVATION OF CATEGORY SHE/HE CREATED
+                sse.publish({"message":f"Admin has APPROVED the category {cat.title.upper()}"}, type=f"{cat.created_by}-{cat.created_by_name}")
+
+                # DELETING THE OLD CACHE
+                cache.delete("get_all_category")
+                cache.delete_memoized(get_category_by_store_admin, str(cat.created_by))
                 return {"message":"Added successfully"}
         return {"message":"Not Allowed"}, 401
     
@@ -101,6 +124,13 @@ class CategoryEndpoint(Resource):
                     return {"message":"Category not found."}, 404
                 db.session.delete(cat)
                 db.session.commit()
+
+                # PUBLISH TO THE STORE ADMIN FOR THE ACTIVATION OF CATEGORY SHE/HE CREATED
+                sse.publish({"message":f"Admin has DELETED the category {cat.title.upper()}"}, type=f"{cat.created_by}-{cat.created_by_name}")
+
+                # DELETING THE OLD CACHE
+                cache.delete("get_all_category")
+                cache.delete_memoized(get_category_by_store_admin, str(cat.created_by))
                 return {"message":"Deleted successfully"}
         return {"message":"Not Allowed"}, 401
 
@@ -116,10 +146,12 @@ class CategoryRequestEndpoint(Resource):
                     id = request.args["id"]
                     cat = CategoryChangeRequest.query.filter_by(id = id).first()
                     return cat.output
-                categories = [i.output for i in CategoryChangeRequest.query.all()]
+                # categories = [i.output for i in CategoryChangeRequest.query.all()]
+                categories = get_all_requested_category()
                 return categories
             elif role == "store_admin":
-                categories = [i.output for i in CategoryChangeRequest.query.filter_by(created_by=user_id).all()]
+                # categories = [i.output for i in CategoryChangeRequest.query.filter_by(created_by=user_id).all()]
+                categories = get_all_requested_category_by_store_admin(user_id)
                 return categories
             return {"message":"Not Allowed"}, 401
         return {"message":"Missing values in Headers."}, 400
@@ -148,6 +180,12 @@ class CategoryRequestEndpoint(Resource):
                 req_type = args["request_type"]
                 sse.publish({"message":f"Store Admin: {store_admin} has requested {req_type.upper()} for {cat.title}."}, type="cat_req")
 
+                # REMOVE THE CACHING
+                cache.delete("get_all_category")
+                cache.delete("get_all_requested_category")
+                cache.delete_memoized(get_category_by_store_admin, args["created_by"])
+                cache.delete_memoized(get_all_requested_category_by_store_admin, args["created_by"])
+
                 return {"message":"Added successfully"}
         return {"message":"Not Allowed"}, 401
     
@@ -175,11 +213,17 @@ class CategoryRequestEndpoint(Resource):
                 db.session.commit()
 
                 # SERVER SIDE EVENTS
-                # (FOR SENDING PUSH NOTIFICATION TO THE ADMIN ABOUT NEW REUEST)
+                # (FOR SENDING PUSH NOTIFICATION TO THE STORE ADMIN ABOUT ADMIN RESPONSE)
                 req_status = args["status"]
                 sm_id = cat_req.created_by
                 sm_name = cat_req.created_by_name
                 sse.publish({"message":f"Admin has {req_status.upper()} your EDIT request for {cat.title}."}, type=f"{sm_id}-{sm_name}")
+
+                # REMOVE THE CACHING
+                cache.delete("get_all_category")
+                cache.delete("get_all_requested_category")
+                cache.delete_memoized(get_category_by_store_admin, args["created_by"])
+                cache.delete_memoized(get_all_requested_category_by_store_admin, args["created_by"])
 
                 return {"message":"Action taken succesfully"}
         return {"message":"Not Allowed"}, 401
@@ -190,11 +234,11 @@ class CategoryRequestEndpoint(Resource):
         if "role" in request.headers:
             role = request.headers["role"]
             if role =="admin":
-                cat = CategoryChangeRequest.query.filter_by(id = args["id"]).first()
-                if not cat:
+                cat_req = CategoryChangeRequest.query.filter_by(id = args["id"]).first()
+                if not cat_req:
                     return {"message":"Request Category ID is missing."}
-                cat.status = args["status"]
-                db.session.add(cat)
+                cat_req.status = args["status"]
+                db.session.add(cat_req)
                 db.session.commit()
                 
                 cat = Category.query.filter_by(id = args["for_category"]).first()
@@ -207,6 +251,20 @@ class CategoryRequestEndpoint(Resource):
                     cat.request_status = False
                     db.session.add(cat)
                     db.session.commit()
+
+                # SERVER SIDE EVENTS
+                # (FOR SENDING PUSH NOTIFICATION TO THE STORE ADMIN ABOUT ADMIN RESPONSE)
+                req_status = args["status"]
+                sm_id = cat_req.created_by
+                sm_name = cat_req.created_by_name
+                sse.publish({"message":f"Admin has {req_status.upper()} your DELETE request for {cat_req.title}."}, type=f"{sm_id}-{sm_name}")
+
+                # REMOVE THE CACHING
+                cache.delete("get_all_category")
+                cache.delete("get_all_requested_category")
+                cache.delete_memoized(get_category_by_store_admin, str(sm_id))
+                cache.delete_memoized(get_all_requested_category_by_store_admin, str(sm_id))
+
                 return {"message":"Deleted succesfully"}
         return {"message":"Not Allowed"}, 401
 
