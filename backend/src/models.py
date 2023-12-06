@@ -73,8 +73,8 @@ class Product(db.Model):
     e_date = db.Column(db.DateTime(), nullable=False)
     stock = db.Column(db.Integer(), nullable=False, default=0)
     price = db.Column(db.Integer(), nullable=False)
+    unit = db.Column(db.String(100), nullable=False)
     created_by = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=False)
-    created_by_name = db.Column(db.String(100), db.ForeignKey('user.full_name'), nullable=False)
 
     @property
     def output(self):
@@ -84,12 +84,12 @@ class Product(db.Model):
             "description": self.description,
             "category_id": self.category_id,
             "image": self.image,
-            "m_date": self.m_date.strftime("%d-%m-%Y, %H:%M:%S.%f"),
-            "e_date": self.e_date.strftime("%d-%m-%Y, %H:%M:%S.%f"),
+            "m_date": self.m_date.strftime("%d-%m-%Y"),
+            "e_date": self.e_date.strftime("%d-%m-%Y"),
             "stock": self.stock,
             "price": self.price,
-            "created_by": self.created_by,
-            "created_by_name":self.created_by_name
+            "unit": self.unit,
+            "created_by": self.created_by
         }
 
 class Cart(db.Model):

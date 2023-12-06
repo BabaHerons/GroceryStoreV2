@@ -198,6 +198,11 @@ class API{
         return fetch(this.BASE_URL + "/products", this.fetch_get())
     }
 
+    // CREATE A PRODUCT
+    public post_product(json_data:any){
+        return fetch(this.BASE_URL + "/products", this.fetch_post(json_data))
+    }
+
 }
 
 export default new API
