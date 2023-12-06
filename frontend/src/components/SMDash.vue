@@ -6,6 +6,7 @@ export default {
     beforeMount(){
         this.get_all_categories()
         this.get_all_categories_request()
+        this.get_all_products()
     },
     mounted() {
         let source = new EventSource("http://localhost:5000/stream")
@@ -20,7 +21,7 @@ export default {
         const listen_for = `${localStorage.getItem("user_id")}-${localStorage.getItem("user")}`
         source.addEventListener(listen_for, (event:any) => {
             const data = JSON.parse(event.data)
-            if (data.message.includes("DECLINED")){
+            if (data.message.includes("DECLINED") || data.message.includes("DELETED")){
                 this.sse.greeting.push(data.message)
             } else {
                 this.sse.category_request.push(data.message)
@@ -54,6 +55,7 @@ export default {
                 greeting:[] as any[],
                 category_request:[] as any[],
             },
+            product_list:[] as any[],
         }
     },
     methods: {
@@ -142,6 +144,15 @@ export default {
                 }
             }
         },
+        get_all_products(){
+            API.get_all_products()
+            .then(response => response.json())
+            .then(data => {
+                let k = data
+                this.product_list = k
+                console.log(this.product_list);
+            })
+        }
     }
 }
 </script>

@@ -17,10 +17,17 @@ def token_required(f):
         else:
             return {"message":"User Role Not Found."}, 401
         
+        if 'user_id' in request.headers:
+            user_id = request.headers['user_id']
+        else:
+            return {"message":"User ID Not Found."}, 401
+        
         try:
             data = jwt.decode(token, SECRET_TOKEN_KEY, algorithms=['HS256'])
             if data["role"] != role:
                 return {"message":"Prohibitted."}, 401
+            if str(data["user"]) != str(user_id):
+                return {"message":"Prohibitted. in user_id"}, 401
         except :
             return {"message":"Invalid TOKEN."}, 401
         return f(*args, **kwargs)

@@ -77,6 +77,7 @@ class API{
             .then(data => {
                 const k = data
                 if (error){
+                    console.log(k);
                     localStorage.removeItem("user")
                     localStorage.removeItem("token")
                     localStorage.removeItem("role")
@@ -188,6 +189,15 @@ class API{
     public delete_category_request(json_data:any){
         return fetch(this.BASE_URL + "/category-request", this.fetch_delete(json_data))
     }
+    // -------------------------------------------------------------------
+
+
+    // -------------------------PRODUCT------------------------------------
+    // GET APP PRODUCTS
+    public get_all_products(){
+        return fetch(this.BASE_URL + "/products", this.fetch_get())
+    }
+
 }
 
 export default new API

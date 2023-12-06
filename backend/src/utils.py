@@ -10,6 +10,10 @@ def current_date_time():
     now = datetime.datetime.now(timezone('Asia/Kolkata'))
     return now
 
+def current_date_time_to_id():
+    now = datetime.datetime.now(timezone('Asia/Kolkata'))
+    return now.strftime("%Y%m%d%H%M%S%f")
+
 def entries():
     if 'entries' in request.args:
         try:
