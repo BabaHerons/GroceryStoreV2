@@ -90,11 +90,13 @@ class OrderEndpoint(Resource):
                             if cart:
                                 db.session.delete(cart)
                                 db.session.commit()
+
+                            cache.delete_memoized(get_all_product_by_sm, str(product.created_by))
                 
                 # DELETING THE CACHE
                 cache.delete("get_all_order")
                 cache.delete("get_all_product")
-                cache.delete_memoized(get_all_product_by_sm, str(product.created_by))
+                
                 return {"message":"Added successfully"}
         return {"message":"Not Allowed"}, 401
 
