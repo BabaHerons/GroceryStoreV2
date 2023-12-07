@@ -19,7 +19,7 @@ class ProductEndpoint(Resource):
         if "role" in request.headers and "user_id" in request.headers:
             role = request.headers["role"]
             user_id = request.headers["user_id"]
-            if role == "admin":
+            if role == "admin" or role == "user":
                 if "id" in request.args:
                     product_id = request.args["id"]
                     product = Product.query.filter_by(id=product_id).first()
@@ -47,7 +47,7 @@ class ProductEndpoint(Resource):
 
                 category = Category.query.filter_by(id = args["category_id"]).first()
                 # SENDING NOTIFICATION TO USER ABOUT NEW ADDITION OF PRODUCT
-                sse.publish({"message":f"New product {args['name']} has been added to category {category.title}"}, type="product")
+                sse.publish({"message":f"New product {args['name'].upper()} has been added to category {category.title.upper()}"}, type="product")
                 
                 # DELETING THE OLD CACHE
                 cache.delete("get_all_product")
@@ -66,6 +66,8 @@ class ProductEndpoint(Resource):
                 product = Product.query.filter_by(id=args["id"]).first()
                 if not product:
                     return {"message":"No products found."}, 404
+                old_stock = product.stock
+
                 if str(product.created_by) == str(args["created_by"]):
                     for key, value in args.items():
                         if key in fields and value is not None:
@@ -73,6 +75,16 @@ class ProductEndpoint(Resource):
                                 setattr(product, key, value)
                     db.session.add(product)
                     db.session.commit()
+
+                category = Category.query.filter_by(id = args["category_id"]).first()
+                # SENDING NOTIFICATION TO USER ABOUT OUT OF STOCK PRODUCT
+                if args["stock"] == str(0):
+                    sse.publish({"message":f"Product {args['name'].upper()} from category {category.title.upper()} is out of stock."}, type="product")
+                
+                # SENDING NOTIFICATION TO USER ABOUT PRODUCT CAME BACK IN STOCK
+                if old_stock == 0 and int(args["stock"]) > 0:
+                    sse.publish({"message":f"Product {args['name'].upper()} from category {category.title.upper()} is back in stock."}, type="product")
+
 
                 # DELETING THE OLD CACHE
                 cache.delete("get_all_product")

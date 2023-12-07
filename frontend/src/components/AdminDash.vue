@@ -7,6 +7,7 @@ export default {
         this.get_all_users()
         this.get_all_categories()
         this.get_pending_category()
+        this.get_all_products()
     },
     mounted() {
         let source = new EventSource("http://localhost:5000/stream")
@@ -54,7 +55,7 @@ export default {
                 category_request:[] as any[],
                 new_category:[] as any[],
             },
-
+            product_list:[] as any[],
         }
     },
     methods: {
@@ -237,7 +238,16 @@ export default {
                     this.get_pending_category()
                 })
             }
-        }
+        },
+        get_all_products(){
+            API.get_all_products()
+            .then(response => response.json())
+            .then(data => {
+                let k = data
+                this.product_list = k
+                // console.log(this.product_list);
+            })
+        },
     }
 }
 </script>
@@ -436,6 +446,50 @@ export default {
                                     <span class="badge rounded-pill text-bg-success">Active</span>
                                 </span>
                                 <span v-else class="badge rounded-pill text-bg-danger">Inactive</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLE FOR PRODUCTS -->
+        <div class="mt-4 mb-4">
+            <div class="d-flex justify-content-between border-bottom border-black">
+                <h2 class="text-secondary">Products List</h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>S.No.</th>
+                            <th>Product ID</th>
+                            <th>Category</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Manufacture Date</th>
+                            <th>Expiry Date</th>
+                            <th>Stock</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="product in product_list">
+                            <td>
+                                {{ product_list.indexOf(product) + 1 }}
+                            </td>
+                            <td>{{product.id}}</td>
+                            <td>{{product.category}}</td>
+                            <td>{{product.name}}</td>
+                            <td>{{product.description}}</td>
+                            <td>{{product.m_date}}</td>
+                            <td>{{product.e_date}}</td>
+                            <td>{{product.stock}} {{ product.unit }}</td>
+                            <td>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-rupee" viewBox="0 0 16 16">
+                                    <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/>
+                                </svg>
+                                <span>{{product.price}} / {{ product.unit }}</span>
                             </td>
                         </tr>
                     </tbody>

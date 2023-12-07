@@ -309,9 +309,9 @@ export default {
                         <tr>
                             <th>S.No.</th>
                             <th>Product ID</th>
+                            <th>Category</th>
                             <th>Name</th>
                             <th>Description</th>
-                            <th>Category</th>
                             <th>Manufacture Date</th>
                             <th>Expiry Date</th>
                             <th>Stock</th>
@@ -325,9 +325,9 @@ export default {
                                 {{ product_list.indexOf(product) + 1 }}
                             </td>
                             <td>{{product.id}}</td>
+                            <td>{{product.category}}</td>
                             <td>{{product.name}}</td>
                             <td>{{product.description}}</td>
-                            <td>{{product.category}}</td>
                             <td>{{product.m_date}}</td>
                             <td>{{product.e_date}}</td>
                             <td>{{product.stock}} {{ product.unit }}</td>
@@ -467,6 +467,7 @@ export default {
                                 <option value="dozen" >Dozen</option>
                                 <option value="kg" >Kg</option>
                                 <option value="litre" >Litre</option>
+                                <option value="piece" >Piece</option>
                             </select>
                         </div>
                     </div>
@@ -559,6 +560,7 @@ export default {
                                 <option value="dozen" >Dozen</option>
                                 <option value="kg" >Kg</option>
                                 <option value="litre" >Litre</option>
+                                <option value="piece" >Piece</option>
                             </select>
                         </div>
                     </div>

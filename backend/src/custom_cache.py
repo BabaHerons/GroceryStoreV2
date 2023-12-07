@@ -1,5 +1,6 @@
 from src import cache
 from src.models import Category, CategoryChangeRequest, User, Product
+from sqlalchemy import desc
 
 #-----------------------FOR CATEGORY--------------------------------------
 @cache.cached(timeout=86400, key_prefix="get_all_category")
@@ -32,10 +33,12 @@ def get_all_requested_category_by_store_admin(sm_id):
 #-----------------------FOR PRODUCT----------------------------------------
 @cache.cached(timeout=86400, key_prefix="get_all_product")
 def get_all_product():
-    products = [{**i[0].output, **{"category":i.title}} for i in Product.query.join(Category).add_columns(Category.title).all()]
+    products = [{**i[0].output, **{"category":i.title}} for i in Product.query.join(Category).add_columns(Category.title).order_by(desc(Category.title)).all()]
+    products.reverse()
     return products
 
 @cache.memoize(86400)
 def get_all_product_by_sm(sm_id):
-    products = [{**i[0].output, **{"category":i.title}} for i in Product.query.filter_by(created_by = sm_id).join(Category).add_columns(Category.title).all()]
+    products = [{**i[0].output, **{"category":i.title}} for i in Product.query.filter_by(created_by = sm_id).join(Category).add_columns(Category.title).order_by(desc(Category.title)).all()]
+    products.reverse()
     return products
