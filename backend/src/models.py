@@ -68,7 +68,7 @@ class Product(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500), nullable=False)
     category_id = db.Column(db.Integer(), db.ForeignKey("category.id"), nullable=False)
-    image = db.Column(db.String(500))
+    # image = db.Column(db.String(500))
     m_date = db.Column(db.DateTime(), nullable=False)
     e_date = db.Column(db.DateTime(), nullable=False)
     stock = db.Column(db.Integer(), nullable=False, default=0)
@@ -83,7 +83,7 @@ class Product(db.Model):
             "name": self.name,
             "description": self.description,
             "category_id": self.category_id,
-            "image": self.image,
+            # "image": self.image,
             "m_date": self.m_date.strftime("%d-%m-%Y"),
             "e_date": self.e_date.strftime("%d-%m-%Y"),
             "stock": self.stock,

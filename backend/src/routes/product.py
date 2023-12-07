@@ -5,12 +5,12 @@ from src.jwt import token_required
 from src.models import Product, Category
 from src.utils import args, current_date_time_to_id
 from flask_sse import sse
-from src.custom_cache import get_all_product
+from src.custom_cache import get_all_product, get_all_product_by_sm
 from datetime import datetime
 
-fields = ["name", "description", "category_id", "image", "m_date", "e_date",
+fields = ["name", "description", "category_id", "m_date", "e_date",
           "stock", "price", "unit", "created_by"]
-product_post_args = args(fields, required=False)
+product_post_args = args(fields)
 product_put_args = args(fields + ["id"])
 
 class ProductEndpoint(Resource):
@@ -27,7 +27,7 @@ class ProductEndpoint(Resource):
                 products = get_all_product()
                 return products
             elif role == "store_admin":
-                products = [i.output for i in Product.query.filter_by(created_by = user_id).all()]
+                products = get_all_product_by_sm(user_id)
                 return products
             return {"message":"Not Allowed"}, 401
         return {"message":"Missing values in Headers."}, 400
@@ -51,6 +51,7 @@ class ProductEndpoint(Resource):
                 
                 # DELETING THE OLD CACHE
                 cache.delete("get_all_product")
+                cache.delete_memoized(get_all_product_by_sm, args["created_by"])
                 return {"message":"Product added successfully."}
         return {"message":"Not Allowed"}, 402
     
@@ -60,6 +61,8 @@ class ProductEndpoint(Resource):
             role = request.headers["role"]
             if role in ["store_admin","admin"]:
                 args = product_put_args.parse_args()
+                args["m_date"] = datetime.strptime(args["m_date"], '%Y-%m-%d')
+                args["e_date"] = datetime.strptime(args["e_date"], '%Y-%m-%d')
                 product = Product.query.filter_by(id=args["id"]).first()
                 if not product:
                     return {"message":"No products found."}, 404
@@ -73,7 +76,8 @@ class ProductEndpoint(Resource):
 
                 # DELETING THE OLD CACHE
                 cache.delete("get_all_product")
-                return {"message":"Product added successfully."}
+                cache.delete_memoized(get_all_product_by_sm, str(product.created_by))
+                return {"message":"Product updated successfully."}
         return {"message":"Not Allowed"}, 402
     
     @token_required
@@ -83,6 +87,7 @@ class ProductEndpoint(Resource):
             product_id = request.args["id"]
             if role in  ["admin", "store_admin"]:
                 product = Product.query.filter_by(id = product_id).first()
+                sm_id = product.created_by
                 if not product:
                     return {"message":"Category not found."}, 404
                 db.session.delete(product)
@@ -90,6 +95,8 @@ class ProductEndpoint(Resource):
 
                 # DELETING THE OLD CACHE
                 cache.delete("get_all_product")
+                cache.delete_memoized(get_all_product_by_sm, str(sm_id))
+
                 return {"message":"Deleted successfully"}
         return {"message":"Not Allowed"}, 401
     

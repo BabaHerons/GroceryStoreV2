@@ -193,7 +193,7 @@ class API{
 
 
     // -------------------------PRODUCT------------------------------------
-    // GET APP PRODUCTS
+    // GET ALL PRODUCTS
     public get_all_products(){
         return fetch(this.BASE_URL + "/products", this.fetch_get())
     }
@@ -201,6 +201,16 @@ class API{
     // CREATE A PRODUCT
     public post_product(json_data:any){
         return fetch(this.BASE_URL + "/products", this.fetch_post(json_data))
+    }
+
+    // EDIT A PRODUCT
+    public put_product(json_data:any){
+        return fetch(this.BASE_URL + "/products", this.fetch_put(json_data))
+    }
+
+    // DELETE A PRODUCT
+    public delete_product(id:any){
+        return fetch(this.BASE_URL + `/products?id=${id}`, this.fetch_delete())
     }
 
 }
