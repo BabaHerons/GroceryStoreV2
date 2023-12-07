@@ -1,5 +1,5 @@
 from src import cache
-from src.models import Category, CategoryChangeRequest, User, Product
+from src.models import Category, CategoryChangeRequest, User, Product, Order, OrderedItems
 from sqlalchemy import desc
 
 #-----------------------FOR CATEGORY--------------------------------------
@@ -42,3 +42,36 @@ def get_all_product_by_sm(sm_id):
     products = [{**i[0].output, **{"category":i.title}} for i in Product.query.filter_by(created_by = sm_id).join(Category).add_columns(Category.title).order_by(desc(Category.title)).all()]
     products.reverse()
     return products
+# --------------------------------------------------------------------------
+
+
+# ----------------------FOR ORDERS------------------------------------------
+@cache.cached(timeout=86400, key_prefix="get_all_order")
+def get_all_order():
+    order = [
+                {
+                    **i[0].output, 
+                    **{
+                        "name":i.name, 
+                        "price":i.price, 
+                        "unit":i.unit,
+                        "date":i.date.strftime("%d-%m-%Y, %H:%M:%S.%f"),
+                        "amount":i.amount,
+                        "title":i.title,
+                        "full_name":i.full_name,
+                        "email":i.email,
+                    }
+                }
+                for i in OrderedItems.query
+                .join(Product, OrderedItems.product_id == Product.id)
+                .add_columns(Product.name, Product.price, Product.unit)
+                .join(Order, Order.id == OrderedItems.order_id)
+                .add_columns(Order.date, Order.amount)
+                .join(Category, Category.id == Product.category_id)
+                .add_columns(Category.title)
+                .join(User, User.id == OrderedItems.user_id)
+                .add_columns(User.full_name, User.email)
+                .all()
+            ]
+    return order
+# --------------------------------------------------------------------------

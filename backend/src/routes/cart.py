@@ -1,10 +1,9 @@
-from src import api, db, cache
+from src import api, db
 from flask_restful import Resource
 from flask import request
 from src.jwt import token_required
-from src.models import Cart, Product
+from src.models import Cart, Product, Category
 from src.utils import args, current_date_time
-from flask_sse import sse
 
 fields = ["product_id", "user_id", "quantity"]
 product_args = args(fields)
@@ -17,7 +16,15 @@ class CartEndpoint(Resource):
             role = request.headers["role"]
             user_id = request.headers["user_id"]
             if role == "user":
-                cart = [{**i[0].output, **{"name":i.name, "price":i.price, "unit":i.unit}} for i in Cart.query.filter_by(user_id = user_id).join(Product).add_columns(Product.name, Product.price, Product.unit).all()]
+                cart = [
+                    {**i[0].output, **{"name":i.name, "price":i.price, "unit":i.unit, "category":i.title}}
+                    for i in Cart.query.filter_by(user_id = user_id)
+                    .join(Product, Cart.product_id == Product.id)
+                    .add_columns(Product.name, Product.price, Product.unit)
+                    .join(Category, Product.category_id == Category.id)
+                    .add_columns(Category.title)
+                    .all()
+                ]
                 return cart
             return {"message":"Not Allowed"}, 401
         return {"message":"Missing values in Headers."}, 400
@@ -35,6 +42,7 @@ class CartEndpoint(Resource):
                 return {"message":"Added successfully"}
         return {"message":"Not Allowed"}, 401
 
+    # FOR UPDATING QUANTITY OF A PRODUCT IN CART
     @token_required
     def patch(self):
         args = product_patch_args.parse_args()

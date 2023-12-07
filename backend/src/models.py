@@ -128,3 +128,22 @@ class Order(db.Model):
             "status": self.status,
         }
 
+class OrderedItems(db.Model):
+    __tablename__ = "ordered_items"
+    id = db.Column(db.Integer(), primary_key = True, nullable=False, unique=True)
+    order_id = db.Column(db.String(200), db.ForeignKey("order.id"), nullable=False)
+    product_id = db.Column(db.String(200), db.ForeignKey("product.id"), nullable=False)
+    quantity = db.Column(db.Integer(), nullable=False)
+    item_total = db.Column(db.Integer(), nullable=False)
+    user_id = db.Column(db.Integer(), db.ForeignKey("user.id"), nullable=False)
+
+    @property
+    def output(self):
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "item_total": self.item_total,
+            "user_id": self.user_id,
+        }

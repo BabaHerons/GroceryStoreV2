@@ -8,6 +8,7 @@ export default {
         this.get_all_categories()
         this.get_pending_category()
         this.get_all_products()
+        this.get_all_orders()
     },
     mounted() {
         let source = new EventSource("http://localhost:5000/stream")
@@ -56,6 +57,7 @@ export default {
                 new_category:[] as any[],
             },
             product_list:[] as any[],
+            all_orders:[] as any[]
         }
     },
     methods: {
@@ -248,6 +250,14 @@ export default {
                 // console.log(this.product_list);
             })
         },
+        get_all_orders(){
+            this.all_orders = []
+            API.get_orders()
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);                
+            })
+        }
     }
 }
 </script>

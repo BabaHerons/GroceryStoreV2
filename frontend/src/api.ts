@@ -231,6 +231,24 @@ class API{
         return fetch(this.BASE_URL + `/cart?id=${id}`, this.fetch_patch(json_data))
     }
 
+    // REMOVE ITEM FROM CART
+    public delete_item_from_cart(id:any){
+        return fetch(this.BASE_URL + `/cart?id=${id}`, this.fetch_delete())
+    }
+    // -------------------------------------------------------------------
+
+
+    // --------------------------ORDER------------------------------------
+    // GET ALL ORDERS
+    public get_orders(){
+        return fetch(this.BASE_URL + "/orders", this.fetch_get())
+    }
+
+    // CREATE AN ORDER
+    public post_order(json_data:any){
+        return fetch(this.BASE_URL + "/orders", this.fetch_post(json_data))
+    }
+
 }
 
 export default new API
