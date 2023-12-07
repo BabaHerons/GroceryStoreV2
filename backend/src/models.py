@@ -71,7 +71,7 @@ class Product(db.Model):
     # image = db.Column(db.String(500))
     m_date = db.Column(db.DateTime(), nullable=False)
     e_date = db.Column(db.DateTime(), nullable=False)
-    stock = db.Column(db.Integer(), nullable=False, default=0)
+    stock = db.Column(db.Float(), nullable=False, default=0)
     price = db.Column(db.Integer(), nullable=False)
     unit = db.Column(db.String(100), nullable=False)
     created_by = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=False)
@@ -106,7 +106,6 @@ class Cart(db.Model):
             "id": self.id,
             "product_id": self.product_id,
             "user_id": self.user_id,
-            "category": self.category,
             "quantity": self.quantity,
             "date": self.date.strftime("%d-%m-%Y, %H:%M:%S.%f")
         }

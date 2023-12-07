@@ -5,6 +5,7 @@ import API from "../api"
 export default {
     beforeMount(){
         this.get_all_products()
+        this.get_cart()
     },
     mounted() {
         let source = new EventSource("http://localhost:5000/stream")
@@ -26,7 +27,8 @@ export default {
             sse:{
                 green:[] as any[],
                 red:[] as any[]
-            }
+            },
+            cart:[] as any[]
         }
     },
     methods: {
@@ -47,6 +49,45 @@ export default {
                 }
             })
         },
+        get_cart(){
+            API.get_cart()
+            .then(response => response.json())
+            .then(data => {
+                this.cart = data
+                for (let i=0; i<this.cart.length; i++){
+                    this.cart[i].item_total = this.cart[i].quantity * Number(this.cart[i].price)
+                }
+            })
+        },
+        add_to_cart(product_id:any){
+            let json_data = {
+                "product_id": product_id,
+                "user_id": `${localStorage.getItem("user_id")}`,
+                "quantity": 1
+            }
+            API.post_cart(json_data)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.get_cart()
+            })
+        },
+        item_total(cart_id:any){
+            for (let i=0; i<this.cart.length; i++){
+                if (this.cart[i].id == cart_id){
+                    this.cart[i].item_total = Number(this.cart[i].quantity) * Number(this.cart[i].price)
+                    
+                    let json_data = {"quantity":this.cart[i].quantity}
+                    API.patch_cart(json_data, cart_id)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        this.get_cart()
+                    })
+                    break
+                }
+            }
+        }
     }
 }
 </script>
@@ -61,7 +102,7 @@ export default {
                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                 </svg>
             </button>
-            <div class="d-flex flex-row-reverse w-100">
+            <div class="d-flex flex-row-reverse w-100" data-bs-toggle="modal" data-bs-target="#cartModal">
                 <button class="btn btn-secondary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart3" viewBox="0 0 16 16">
                         <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -96,7 +137,7 @@ export default {
                           <h5 class="card-title">{{ product.name }}</h5>
                           
                           <!-- PRODUCT DESCRIPTION -->
-                          <p class="card-text">{{ product.description }}</p>
+                          <p class="card-text" style="overflow-y: auto; height: 100px;">{{ product.description }}</p>
                           
                           <!-- PRICE & STOCK DETAILS -->
                           <div class="mb-2 fw-semibold d-flex justify-content-between ">
@@ -123,13 +164,79 @@ export default {
                           </div>
 
                           <!-- ADD TO CART & BUY NOW BUTTONS -->
-                          <div class="d-flex justify-content-between mt-3">
-                              <button class="btn btn-outline-secondary">Add to cart</button>
+                          <div v-if="product.stock > 0" class="d-flex justify-content-between mt-3">
+                              <button v-on:click="add_to_cart(product.id)" class="btn btn-outline-secondary">Add to cart</button>
                               <button class="btn btn-success">Buy Now</button>
                           </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- CART MODAL -->
+        <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="registerLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="registerLabel">Cart</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex flex-wrap justify-content-center">
+                        <div v-for="product in cart">
+                            <div class="card m-2 shadow-sm" style="width: 18rem;">
+                                <!-- <img src="..." class="card-img-top" alt="..."> -->
+                                <div class="card-body">
+                                  <!-- PRODUCT NAME -->
+                                  <h5 class="card-title">{{ product.name }}</h5>
+                                  <span>{{ product.product_id }}</span>
+
+                                  <!-- PRICE & QUANTITY DETAILS -->
+                                  <div class="mt-2 mb-2 fw-semibold d-flex justify-content-between ">
+                                    <!-- PRICE OF PRODUCT -->
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-rupee" viewBox="0 0 16 16">
+                                            <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/>
+                                        </svg>
+                                        <span>{{ product.price }} / {{ product.unit }}</span>
+                                    </div>
+                                    <div>
+                                        <label for="quantity">Quantity</label> &nbsp;
+                                        <select v-on:change="item_total(product.id)" v-model="product.quantity" name="quantity" id="quantity">
+                                            <option class="p-2" value="1">1</option>
+                                            <option class="p-2" value="2">2</option>
+                                            <option class="p-2" value="3">3</option>
+                                            <option class="p-2" value="4">4</option>
+                                            <option class="p-2" value="5">5</option>
+                                            <option class="p-2" value="6">6</option>
+                                            <option class="p-2" value="7">7</option>
+                                            <option class="p-2" value="8">8</option>
+                                            <option class="p-2" value="9">9</option>
+                                            <option class="p-2" value="10">10</option>
+                                        </select>
+                                    </div>
+                                  </div>
+                                
+                                  <!-- ITEM TOTAL -->
+                                  <div class="d-flex justify-content-between fw-semibold">
+                                    <div class="text-primary">
+                                        <span>Total:</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-rupee" viewBox="0 0 16 16">
+                                            <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/>
+                                        </svg>
+                                        <span>{{ product.item_total }}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="cart.length > 0" class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Buy Now</button>
+                </div>
+            </div>
             </div>
         </div>
     </div>

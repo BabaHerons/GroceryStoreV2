@@ -212,6 +212,24 @@ class API{
     public delete_product(id:any){
         return fetch(this.BASE_URL + `/products?id=${id}`, this.fetch_delete())
     }
+    // -------------------------------------------------------------------
+
+
+    // -------------------------CART--------------------------------------
+    // GET CART
+    public get_cart(){
+        return fetch(this.BASE_URL + "/cart", this.fetch_get())
+    }
+
+    // ADD TO CART
+    public post_cart(json_data:any){
+        return fetch(this.BASE_URL + "/cart", this.fetch_post(json_data))
+    }
+
+    // UPDATE QUANTITY TO PURCHASE IN CART
+    public patch_cart(json_data:any, id:any){
+        return fetch(this.BASE_URL + `/cart?id=${id}`, this.fetch_patch(json_data))
+    }
 
 }
 

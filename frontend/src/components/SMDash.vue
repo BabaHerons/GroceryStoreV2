@@ -327,7 +327,7 @@ export default {
                             <td>{{product.id}}</td>
                             <td>{{product.category}}</td>
                             <td>{{product.name}}</td>
-                            <td>{{product.description}}</td>
+                            <td><div style="overflow-y: auto; height: 150px;">{{product.description}}</div></td>
                             <td>{{product.m_date}}</td>
                             <td>{{product.e_date}}</td>
                             <td>{{product.stock}} {{ product.unit }}</td>
