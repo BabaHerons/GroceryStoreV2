@@ -66,7 +66,7 @@ class OrderEndpoint(Resource):
                     # CHECKING THE STOCK QUANTITY
                     product = Product.query.filter_by(id = item["product_id"]).first()
                     if product:
-                        if float(product.stock) > float(item["quantity"]):
+                        if float(product.stock) >= float(item["quantity"]):
                             ordered_item = OrderedItems(
                                 order_id=order_id,
                                 product_id=item["product_id"],

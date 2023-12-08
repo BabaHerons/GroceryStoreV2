@@ -1,8 +1,8 @@
-from src import api, SECRET_TOKEN_KEY, fernet
+from src import api, SECRET_TOKEN_KEY, fernet, db
 from flask_restful import Resource, reqparse
 from src.jwt import token_required, create_token
 from src.models import User
-from src.utils import args
+from src.utils import args, current_date_time
 import jwt
 
 login_args = args(["email", "password"])
@@ -23,6 +23,12 @@ class Login(Resource):
         if user_password == decoded_password:
             if user.is_active:
                 token = create_token(user.id, user.role)
+                
+                # ADDING THE LAST LOGIN TIME OF THE USER
+                user.last_login = current_date_time()
+                db.session.add(user)
+                db.session.commit()
+                
                 return {"token":token, "role":user.role, "full_name": user.full_name, "user_id":user.id}
             return {"message": "User Inactive. Please contact admin"}, 401
         return {"message": "Wrong Password"}, 401

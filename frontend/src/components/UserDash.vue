@@ -33,16 +33,19 @@ export default {
             cart_total:0,
             order_history:[] as any[],
             order_details:{} as any,
+            search_text:"",
         }
     },
     methods: {
         get_all_products(){
+            this.product_list = []
             API.get_all_products()
             .then(response => response.json())
             .then(data => {
                 let k = data
                 this.product_list = k
                 
+                this.category = []
                 // POPULATING ALL AVAILABLE CATEGORIES
                 for (let i=0; i<this.product_list.length; i++){
                     let cat = this.product_list[i].category
@@ -137,6 +140,48 @@ export default {
                     break
                 }
             }
+        },
+        search(){
+            let new_products_list = [] as any[]
+            for (let i=0; i<this.product_list.length; i++){
+                let prod = this.product_list[i]
+                if (prod.category.toLowerCase().includes(this.search_text.toLowerCase())){
+                    new_products_list.push(prod)
+                }
+                else if (prod.description.toLowerCase().includes(this.search_text.toLowerCase())){
+                    new_products_list.push(prod)
+                }
+                else if (prod.name.toLowerCase().includes(this.search_text.toLowerCase())){
+                    new_products_list.push(prod)
+                }
+                else if (prod.e_date.toLowerCase().includes(this.search_text.toLowerCase())){
+                    new_products_list.push(prod)
+                }
+                else if (prod.m_date.toLowerCase().includes(this.search_text.toLowerCase())){
+                    new_products_list.push(prod)
+                }
+                else if (String(prod.price).toLowerCase().includes(this.search_text.toLowerCase())){
+                    new_products_list.push(prod)
+                }
+                else if (prod.unit.toLowerCase().includes(this.search_text.toLowerCase())){
+                    new_products_list.push(prod)
+                }
+            }
+            this.product_list = new_products_list
+
+            this.category = []
+            // POPULATING ALL AVAILABLE CATEGORIES
+            for (let i=0; i<this.product_list.length; i++){
+                    let cat = this.product_list[i].category
+                    if (this.category.includes(cat)){}
+                    else {
+                        this.category.push(cat)
+                    }
+                }
+        },
+        reset(){
+            this.get_all_products()
+            this.search_text = ""
         }
     }
 }
@@ -147,12 +192,13 @@ export default {
         <!-- SEARCH BAR -->
         <div class="d-md-flex flex-md-row d-flex flex-column  align-items-center justify-content-center gap-2  mt-4">
             <div class="w-100 d-flex ">
-                <input type="text" class="form-control w-100 " placeholder="Search products here">
-                <button class="btn btn-secondary fw-bold ">
+                <input type="text" class="form-control w-100" v-model="search_text" placeholder="Search products here">
+                <button v-on:click="search" class="btn btn-secondary fw-bold ">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                     </svg>
                 </button>
+                <button v-on:click="reset" class="btn btn-outline-secondary">Reset</button>
             </div>
             <div class="d-flex flex-row-reverse justify-content-between w-100">
                 <button data-bs-toggle="modal" data-bs-target="#cartModal" class="btn btn-warning">
@@ -217,9 +263,9 @@ export default {
                           </div>
 
                           <!-- ADD TO CART & BUY NOW BUTTONS -->
-                          <div v-if="product.stock > 0" class="d-flex justify-content-between mt-3">
+                          <div v-if="product.stock > 0" class="d-flex flex-row-reverse justify-content-between mt-3">
                               <button v-on:click="add_to_cart(product.id)" class="btn btn-outline-secondary">Add to cart</button>
-                              <button class="btn btn-success">Buy Now</button>
+                              <!-- <button class="btn btn-success">Buy Now</button> -->
                           </div>
                         </div>
                     </div>

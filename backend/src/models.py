@@ -8,6 +8,7 @@ class User(db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(500), nullable=False)
     role = db.Column(db.String(50), nullable=False)
+    last_login = db.Column(db.DateTime())
     is_active = db.Column(db.Boolean(), nullable=False)
 
     @property
@@ -17,6 +18,7 @@ class User(db.Model):
             "full_name": self.full_name,
             "email": self.email,
             "role": self.role,
+            "last_login": self.last_login.strftime("%d-%m-%Y, %H:%M:%S.%f"),
             "is_active":self.is_active
         }
 
