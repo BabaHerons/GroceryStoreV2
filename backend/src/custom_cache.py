@@ -48,30 +48,48 @@ def get_all_product_by_sm(sm_id):
 # ----------------------FOR ORDERS------------------------------------------
 @cache.cached(timeout=86400, key_prefix="get_all_order")
 def get_all_order():
-    order = [
-                {
-                    **i[0].output, 
-                    **{
-                        "name":i.name, 
-                        "price":i.price, 
-                        "unit":i.unit,
-                        "date":i.date.strftime("%d-%m-%Y, %H:%M:%S.%f"),
-                        "amount":i.amount,
-                        "title":i.title,
-                        "full_name":i.full_name,
-                        "email":i.email,
-                    }
-                }
-                for i in OrderedItems.query
-                .join(Product, OrderedItems.product_id == Product.id)
-                .add_columns(Product.name, Product.price, Product.unit)
-                .join(Order, Order.id == OrderedItems.order_id)
-                .add_columns(Order.date, Order.amount)
-                .join(Category, Category.id == Product.category_id)
-                .add_columns(Category.title)
-                .join(User, User.id == OrderedItems.user_id)
-                .add_columns(User.full_name, User.email)
-                .all()
-            ]
-    return order
+    # order = [
+    #             {
+    #                 **i[0].output, 
+    #                 **{
+    #                     "name":i.name, 
+    #                     "price":i.price, 
+    #                     "unit":i.unit,
+    #                     "date":i.date.strftime("%d-%m-%Y, %H:%M:%S.%f"),
+    #                     "amount":i.amount,
+    #                     "title":i.title,
+    #                     "full_name":i.full_name,
+    #                     "email":i.email,
+    #                 }
+    #             }
+    #             for i in OrderedItems.query
+    #             .join(Product, OrderedItems.product_id == Product.id)
+    #             .add_columns(Product.name, Product.price, Product.unit)
+    #             .join(Order, Order.id == OrderedItems.order_id)
+    #             .add_columns(Order.date, Order.amount)
+    #             .join(Category, Category.id == Product.category_id)
+    #             .add_columns(Category.title)
+    #             .join(User, User.id == OrderedItems.user_id)
+    #             .add_columns(User.full_name, User.email)
+    #             .all()
+    #         ]
+    orders = [
+        {**i[0].output, **{"user_full_name":i.full_name}}
+        for i in Order.query
+        .join(User, User.id == Order.user_id)
+        .add_columns(User.full_name)
+        .all()
+    ]
+    for order in orders:
+        products = [
+            {**i[0].output, **{"name":i.name, "price":i.price, "unit":i.unit, "category":i.title}}
+            for i in OrderedItems.query.filter_by(order_id  = order["id"])
+            .join(Product, Product.id == OrderedItems.product_id)
+            .add_columns(Product.name, Product.price, Product.unit)
+            .join(Category, Category.id == Product.category_id)
+            .add_columns(Category.title)
+            .all()
+        ]
+        order["products"] = products
+    return orders
 # --------------------------------------------------------------------------

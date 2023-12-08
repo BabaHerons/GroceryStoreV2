@@ -2,7 +2,7 @@ from src import api, db, cache
 from flask_restful import Resource
 from flask import request
 from src.jwt import token_required
-from src.models import Order, OrderedItems, Product, Category, Cart
+from src.models import Order, OrderedItems, Product, Category, Cart, User
 from src.utils import args, current_date_time, current_date_time_to_id
 from src.custom_cache import get_all_order, get_all_product_by_sm
 import json
@@ -17,32 +17,29 @@ class OrderEndpoint(Resource):
             role = request.headers["role"]
             user_id = request.headers["user_id"]
             if role == "user":
-                cart = [
-                    {
-                        **i[0].output, 
-                        **{
-                            "name":i.name, 
-                            "price":i.price, 
-                            "unit":i.unit,
-                            "date":i.date,
-                            "amount":i.amount,
-                            "title":i.title,
-                        }
-                    }
-                    for i in OrderedItems.query.filter_by(user_id = user_id)
-                    .join(Product, OrderedItems.product_id == Product.id)
-                    .add_columns(Product.name, Product.price, Product.unit)
-                    .join(Order, Order.id == OrderedItems.order_id)
-                    .add_columns(Order.date, Order.amount)
-                    .join(Category, Category.id == Product.category_id)
-                    .add_columns(Category.title)
+                orders = [
+                    {**i[0].output, **{"user_full_name":i.full_name}}
+                    for i in Order.query.filter_by(user_id=user_id)
+                    .join(User, User.id == Order.user_id)
+                    .add_columns(User.full_name)
                     .all()
                 ]
-                return cart
-            if role == "admin":
+                for order in orders:
+                    products = [
+                        {**i[0].output, **{"name":i.name, "price":i.price, "unit":i.unit, "category":i.title}}
+                        for i in OrderedItems.query.filter_by(order_id  = order.id)
+                        .join(Product, Product.id == OrderedItems.product_id)
+                        .add_columns(Product.name, Product.price, Product.unit)
+                        .join(Category, Category.id == Product.category_id)
+                        .add_columns(Category.title)
+                        .all()
+                    ]
+                    order["products"] = products
+            elif role == "admin":
                 orders = get_all_order()
-                return orders
-            return {"message":"Not Allowed"}, 401
+            else:
+                return {"message":"Not Allowed"}, 401
+            return orders
         return {"message":"Missing values in Headers."}, 400
 
     @token_required

@@ -463,47 +463,119 @@ export default {
             </div>
         </div>
 
-        <!-- TABLE FOR PRODUCTS -->
-        <div class="mt-4 mb-4">
-            <div class="d-flex justify-content-between border-bottom border-black">
-                <h2 class="text-secondary">Products List</h2>
+        <!-- ACCORDIAN FOR PRODUCTS LIST -->
+        <div class="accordion mt-4 mb-4" id="accordionPanelsStayOpenExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <h1 class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                  Product List
+                </h1>
+              </h2>
+              <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                    <!-- TABLE FOR PRODUCTS -->
+                    <div class="mt-4 mb-4">
+                        <div class="d-flex justify-content-between border-bottom border-black">
+                            <h2 class="text-secondary">Products List</h2>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>S.No.</th>
+                                        <th>Product ID</th>
+                                        <th>Category</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Manufacture Date</th>
+                                        <th>Expiry Date</th>
+                                        <th>Stock</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="product in product_list">
+                                        <td>
+                                            {{ product_list.indexOf(product) + 1 }}
+                                        </td>
+                                        <td>{{product.id}}</td>
+                                        <td class="text-info">{{product.category}}</td>
+                                        <td class="text-primary fw-semibold ">{{product.name}}</td>
+                                        <td>{{product.description}}</td>
+                                        <td>{{product.m_date}}</td>
+                                        <td>{{product.e_date}}</td>
+                                        <td>{{product.stock}} {{ product.unit }}</td>
+                                        <td>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-rupee" viewBox="0 0 16 16">
+                                                <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/>
+                                            </svg>
+                                            <span>{{product.price}} / {{ product.unit }}</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+              </div>
             </div>
-            <div style="overflow-x:auto;">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>S.No.</th>
-                            <th>Product ID</th>
-                            <th>Category</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Manufacture Date</th>
-                            <th>Expiry Date</th>
-                            <th>Stock</th>
-                            <th>Price</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="product in product_list">
-                            <td>
-                                {{ product_list.indexOf(product) + 1 }}
-                            </td>
-                            <td>{{product.id}}</td>
-                            <td>{{product.category}}</td>
-                            <td>{{product.name}}</td>
-                            <td>{{product.description}}</td>
-                            <td>{{product.m_date}}</td>
-                            <td>{{product.e_date}}</td>
-                            <td>{{product.stock}} {{ product.unit }}</td>
-                            <td>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-rupee" viewBox="0 0 16 16">
-                                    <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/>
-                                </svg>
-                                <span>{{product.price}} / {{ product.unit }}</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        </div>
+
+        <!-- ACCORDIAN FOR ALL ORDERS -->
+        <div class="accordion mt-4 mb-4" id="accordionPanelsStayOpenExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <h1 class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                  Product List
+                </h1>
+              </h2>
+              <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                    <!-- TABLE FOR PRODUCTS -->
+                    <div class="mt-4 mb-4">
+                        <div class="d-flex justify-content-between border-bottom border-black">
+                            <h2 class="text-secondary">Products List</h2>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>S.No.</th>
+                                        <th>Product ID</th>
+                                        <th>Category</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Manufacture Date</th>
+                                        <th>Expiry Date</th>
+                                        <th>Stock</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="product in product_list">
+                                        <td>
+                                            {{ product_list.indexOf(product) + 1 }}
+                                        </td>
+                                        <td>{{product.id}}</td>
+                                        <td class="text-info">{{product.category}}</td>
+                                        <td class="text-primary fw-semibold ">{{product.name}}</td>
+                                        <td>{{product.description}}</td>
+                                        <td>{{product.m_date}}</td>
+                                        <td>{{product.e_date}}</td>
+                                        <td>{{product.stock}} {{ product.unit }}</td>
+                                        <td>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-rupee" viewBox="0 0 16 16">
+                                                <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z"/>
+                                            </svg>
+                                            <span>{{product.price}} / {{ product.unit }}</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+              </div>
             </div>
         </div>
 
