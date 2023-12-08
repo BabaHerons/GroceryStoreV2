@@ -27,7 +27,7 @@ class OrderEndpoint(Resource):
                 for order in orders:
                     products = [
                         {**i[0].output, **{"name":i.name, "price":i.price, "unit":i.unit, "category":i.title}}
-                        for i in OrderedItems.query.filter_by(order_id  = order.id)
+                        for i in OrderedItems.query.filter_by(order_id  = order["id"])
                         .join(Product, Product.id == OrderedItems.product_id)
                         .add_columns(Product.name, Product.price, Product.unit)
                         .join(Category, Category.id == Product.category_id)

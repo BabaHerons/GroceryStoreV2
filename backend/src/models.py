@@ -123,7 +123,7 @@ class Order(db.Model):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "date": self.date.strftime("%d-%m-%Y, %H:%M:%S.%f"),
+            "date": self.date.strftime("%d-%m-%Y, %H:%M:%S"),
             "amount": self.amount,
             "status": self.status,
         }
