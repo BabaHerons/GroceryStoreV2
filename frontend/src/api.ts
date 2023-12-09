@@ -248,7 +248,13 @@ class API{
     public post_order(json_data:any){
         return fetch(this.BASE_URL + "/orders", this.fetch_post(json_data))
     }
+    // -------------------------------------------------------------------
 
+
+    // --------------------------SEND INVOICE ON MAIL---------------------
+    public send_invoice_email(order_id:any){
+        return fetch(this.BASE_URL + `/invoice/${order_id}`, this.fetch_get())
+    }
 }
 
 export default new API

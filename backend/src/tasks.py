@@ -1,4 +1,4 @@
-from src import celery, mail
+from src import celery, mail, app
 from flask import render_template
 from datetime import datetime
 from celery.schedules import crontab
@@ -6,12 +6,12 @@ from flask_mail import Message
 from src.models import User, Order, OrderedItems, Product, Category
 from src.utils import current_date_time
 
-# class ContextTask(celery.Task):
-#     def __call__(self, *args, **kwargs):
-#         with app.app_context():
-#             return self.run(*args, **kwargs)
+class ContextTask(celery.Task):
+    def __call__(self, *args, **kwargs):
+        with app.app_context():
+            return self.run(*args, **kwargs)
 
-# celery.Task = ContextTask
+celery.Task = ContextTask
 
 @celery.on_after_finalize.connect
 def setup_periodic_task(sender, **kwargs):
@@ -45,7 +45,7 @@ def send_invoice_email(order_id):
         order["products"] = products
     orders[0]["todays_date"] = current_date_time().strftime("%d-%m-%Y\n%H:%M:%S")
 
-    msg = Message('User Sign Up Request', recipients=[orders[0]["email"]])
+    msg = Message(f'Invoice for Order ID:{orders[0]["id"]}', recipients=[orders[0]["email"]])
     msg.html = render_template('/invoice.html', order=orders[0])
     mail.send(msg)
 

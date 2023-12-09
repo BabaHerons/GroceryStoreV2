@@ -182,6 +182,13 @@ export default {
         reset(){
             this.get_all_products()
             this.search_text = ""
+        },
+        send_invoice_email(){
+            API.send_invoice_email(this.order_details.id)
+            .then(resp => resp.json())
+            .then(data => {
+                alert(`${data.message}`)
+            })
         }
     }
 }
@@ -396,6 +403,7 @@ export default {
                     <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#orderHistoryModal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <button class="btn btn-outline-primary" v-on:click="send_invoice_email">Send Invoice on mail</button>
                     <div class="d-flex flex-wrap justify-content-center">
                         <div v-for="product in order_details.products">
                             <div class="card m-2 shadow-sm" style="width: 18rem;">

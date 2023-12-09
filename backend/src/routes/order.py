@@ -6,6 +6,7 @@ from src.models import Order, OrderedItems, Product, Category, Cart, User
 from src.utils import args, current_date_time, current_date_time_to_id
 from src.custom_cache import get_all_order, get_all_product_by_sm
 import json
+from src import tasks
 
 fields = ["products", "amount"]
 order_args = args(fields)
@@ -94,7 +95,19 @@ class OrderEndpoint(Resource):
                 cache.delete("get_all_order")
                 cache.delete("get_all_product")
                 
-                return {"message":"Added successfully"}
+                # TRIGGER MAIL ASYNC JOB
+                tasks.send_invoice_email.s(order_id).apply_async()
+
+                return {"message":"Purchased successfully"}
         return {"message":"Not Allowed"}, 401
 
+class InvoiceEndpoint(Resource):
+    @token_required
+    def get(self, order_id):
+        job = tasks.send_invoice_email.s(order_id).apply_async()
+        # result = job.wait()
+        return {"message":f"Mail Sent for Order ID:{order_id}"}
+
+
 api.add_resource(OrderEndpoint, "/orders")
+api.add_resource(InvoiceEndpoint, "/invoice/<string:order_id>")
