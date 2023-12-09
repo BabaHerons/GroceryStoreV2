@@ -69,6 +69,7 @@ CELERY_CONFIG = {"broker_url":"redis://localhost:6379/1", "result_backend":"redi
 
 celery = Celery("Groccery Store Jobs")
 celery.conf.update(CELERY_CONFIG)
+celery.conf.enable_utc = False
 
 
 db = SQLAlchemy(app)

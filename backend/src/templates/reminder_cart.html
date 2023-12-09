@@ -6,7 +6,7 @@
       <tr>
         <!-- <th style="text-align:left;"><img style="max-width: 150px;" src="https://www.bachanatours.in/book/img/logo.png" alt="bachana tours"></th> -->
         <th style="text-align:left;">Grocery Store</th>
-        <th style="text-align:right;font-weight:400;">{{ order.todays_date }} <br> {{ order.todays_time }}</th>
+        <th style="text-align:right;font-weight:400;">{{ user.todays_date }} <br> {{ user.todays_time }}</th>
       </tr>
     </thead>
     <tbody>
@@ -14,30 +14,22 @@
         <td style="height:35px;"></td>
       </tr>
       <tr>
-        <td colspan="2" style="border: solid 1px #ddd; padding:10px 20px;">
-          <p style="font-size:14px;margin:0 0 6px 0;"><span style="font-weight:bold;display:inline-block;min-width:150px">Order status</span><b style="color:green;font-weight:normal;margin:0">Success</b></p>
-          <p style="font-size:14px;margin:0 0 6px 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Order Date</span> {{ order.date }}</p>
-          <p style="font-size:14px;margin:0 0 6px 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Order ID</span> {{ order.id }}</p>
-          <p style="font-size:14px;margin:0 0 0 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Order amount</span> Rs. {{ order.amount }}</p>
-        </td>
-      </tr>
-      <tr>
         <td style="height:35px;"></td>
       </tr>
       <tr>
         <td style="width:50%;padding:20px;vertical-align:top">
-          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px">Name</span> {{ order.user_full_name }}</p>
+          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px">Name</span> {{ user.full_name }}</p>
         </td>
         <td style="width:50%;padding:20px;vertical-align:top">
-          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px;">Email Address</span> {{ order.email }}</p>
+          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px;">Email</span> {{ user.email }}</p>
         </td>
       </tr>
       <tr>
-        <td colspan="2" style="font-size:20px;padding:30px 15px 0 15px;">Items</td>
+        <td colspan="2" style="font-size:20px;padding:30px 15px 0 15px;">Items waiting in your cart to be purchased. Hurry! before they get out of stock.</td>
       </tr>
       <tr>
         <td colspan="2" style="padding:15px;">
-        {% for product in order.products %}
+        {% for product in cart %}
           <p style="font-size:14px;margin:0;padding:10px;border:solid 1px #ddd;font-weight:bold;">
             <span style="display:block;font-size:13px;font-weight:bold;">{{ product["category"] }}</span>
             <span style="display:block;font-size:13px;font-weight:normal;">{{ product["name"] }}</span> Rs. {{ product["price"] }} / {{ product["unit"] }} <b style="font-size:12px;font-weight:300;"></b>
@@ -49,7 +41,7 @@
         </td>
       </tr>
       <tr>
-        <td colspan="2" style="font-size:20px;padding:30px 15px 0 15px;">Grand Total: Rs. {{ order.amount }}</td>
+        <td colspan="2" style="font-size:20px;padding:30px 15px 0 15px;">Grand Total: Rs. {{ user.grand_total }}</td>
       </tr>
     </tbody>
     <tfooter>
