@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "grocery_store",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "vite-plugin-pwa": "^0.17.4",
     "vue": "^3.3.8",
     "vue-router": "^4.2.5"
   },
