@@ -258,7 +258,8 @@ export default {
             .then(response => response.json())
             .then(data => {
                 this.order_history = data
-
+                console.log(this.order_history);
+                
                 this.total_earning = 0
                 for (let i=0; i<this.order_history.length; i++){
                     this.total_earning += Number(this.order_history[i].amount)

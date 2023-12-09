@@ -1,13 +1,23 @@
 from src import celery, mail, app
 from flask import render_template
-from datetime import datetime
 from celery.schedules import crontab
 from flask_mail import Message
 from src.models import User, Order, OrderedItems, Product, Category, Cart
 from src.utils import current_date_time
-from src.custom_cache import get_all_product, get_all_product_by_sm
+from src.custom_cache import get_all_product, get_all_product_by_sm, get_all_order
 import pandas as pd
+import matplotlib.pyplot as plt
 import os
+
+
+# -------------------------------------------------------------
+# CELERY WORKER (BATCH JOBS)
+# celery -A main.celery worker -l info
+# -------------------------------------------------------------
+# CELERY BEAT (SCHEDULED JOBS)
+# celery -A main.celery beat --max-interval 1 -l info
+# -------------------------------------------------------------
+
 
 class ContextTask(celery.Task):
     def __call__(self, *args, **kwargs):
@@ -21,7 +31,10 @@ def setup_periodic_task(sender, **kwargs):
     # sender.add_periodic_task(5000, just_say_hello.s(), name="Runs every 5 seconds.")
 
     # REMINDING USER DAILY AT 7:00 PM
-    sender.add_periodic_task(crontab(hour=19, minute=52), reminding_user.s())
+    sender.add_periodic_task(crontab(hour=19, minute=0), reminding_user.s())
+
+    # MONTHLY REPORT TO BE SENT 1ST OF EVERY MONTH
+    sender.add_periodic_task(crontab(day_of_month=1), send_sales_report.s())
 
 @celery.task()
 def just_say_hello():
@@ -76,7 +89,7 @@ def export_products_csv(sm_id = None):
 # ASYNC JOB FOR REMINDING USER TO COME BACK
 @celery.task()
 def reminding_user():
-    users = [i.output for i in User.query.all()]
+    users = [i.output for i in User.query.filter_by(role="user").all()]
     for user in users:
         user["todays_date"] = current_date_time().strftime("%B %d, %Y")
         user["todays_time"] = current_date_time().strftime("%I:%M:%S %p")
@@ -110,4 +123,65 @@ def reminding_user():
             continue
     return "Job Done."
 
+# ASYNC JOB FOR REPORTING SALES
+@celery.task()
+def sales_report():
+    orders = get_all_order()
+    product_report = {}
+    category_report = {}
+    for order in orders:
+        for item in order["products"]:
+            if item['name'] not in product_report:
+                product_report[item["name"]] = 0
+            product_report[item["name"]] += item["quantity"]
+
+            if item["category"] not in category_report:
+                category_report[item["category"]] = 0
+            category_report[item["category"]] += item["quantity"]
     
+    fig, ax = plt.subplots(1, figsize = (15, 8))
+    fig.autofmt_xdate()
+    plt.bar(range(len(product_report)), list(product_report.values()))
+    plt.xticks(range(len(product_report)), list(product_report.keys()))
+    filepath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sales_report/products.png")
+    plt.savefig(filepath)
+
+    plt.clf()
+
+    fig, ax = plt.subplots(1, figsize = (10, 8))
+    fig.autofmt_xdate()
+    plt.bar(range(len(category_report)), list(category_report.values()))
+    plt.xticks(range(len(category_report)), list(category_report.keys()))
+    filepath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sales_report/category.png")
+    plt.savefig(filepath)
+
+    return "Completed"
+            
+@celery.task()
+def send_sales_report():
+    users = [i.output for i in User.query.filter_by(role = "admin").all()] + [i.output for i in User.query.filter_by(role = "store_admin").all()]
+    job = sales_report.delay()
+
+    filepath_product = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sales_report/products.png")
+    filepath_category = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sales_report/category.png")
+    for user in users:
+        user["todays_date"] = current_date_time().strftime("%B %d, %Y")
+        user["todays_time"] = current_date_time().strftime("%I:%M:%S %p")
+        msg = Message(f"Monthly Sales Report - {current_date_time().strftime('%B')}", recipients=[user["email"]])
+
+        # ADDING THE ATTACHMENTS
+        with app.open_resource(filepath_product) as fp:
+            msg.attach("products_sales_report.png", "image/png", fp.read())
+        with app.open_resource(filepath_category) as fp:
+            msg.attach("category_sales_report.png", "image/png", fp.read())
+        
+        # CREATING THE EMAIL BODY
+        msg.html = render_template('/monthly_report.html', user=user)
+
+        # SENDING THE MAIL
+        try:
+            mail.send(msg)
+        except:
+            continue
+    return "Monthly report sent."
+

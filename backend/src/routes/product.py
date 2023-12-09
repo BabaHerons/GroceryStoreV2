@@ -52,6 +52,7 @@ class ProductEndpoint(Resource):
                 
                 # DELETING THE OLD CACHE
                 cache.delete("get_all_product")
+                cache.delete("get_all_order")
                 cache.delete_memoized(get_all_product_by_sm, args["created_by"])
                 return {"message":"Product added successfully."}
         return {"message":"Not Allowed"}, 402
@@ -89,6 +90,7 @@ class ProductEndpoint(Resource):
 
                 # DELETING THE OLD CACHE
                 cache.delete("get_all_product")
+                cache.delete("get_all_order")
                 cache.delete_memoized(get_all_product_by_sm, str(product.created_by))
                 return {"message":"Product updated successfully."}
         return {"message":"Not Allowed"}, 402
@@ -108,6 +110,7 @@ class ProductEndpoint(Resource):
 
                 # DELETING THE OLD CACHE
                 cache.delete("get_all_product")
+                cache.delete("get_all_order")
                 cache.delete_memoized(get_all_product_by_sm, str(sm_id))
 
                 return {"message":"Deleted successfully"}
