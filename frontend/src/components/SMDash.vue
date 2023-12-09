@@ -8,6 +8,7 @@ export default {
         this.get_all_categories_request()
         this.get_all_products()
         this.product.created_by = `${localStorage.getItem("user_id")}`
+        this.get_monthly_sales_report()
     },
     mounted() {
         let source = new EventSource("http://localhost:5000/stream")
@@ -69,7 +70,8 @@ export default {
                 created_by:""
             },
             selected_product:{} as any,
-
+            sr_product:"",
+            sr_category:"",
         }
     },
     methods: {
@@ -230,6 +232,23 @@ export default {
                 window.open(url, '_blank');
                 URL.revokeObjectURL(url);
             });
+        },
+        get_monthly_sales_report(){
+            // FOR PRODUCTS
+            API.monthly_sales_report_products()
+            .then(resp => resp.blob())
+            .then(blob => URL.createObjectURL(blob))
+            .then(url => {
+                this.sr_product = url
+            });
+
+            // FOR CATEGORY
+            API.monthly_sales_report_category()
+            .then(resp => resp.blob())
+            .then(blob => URL.createObjectURL(blob))
+            .then(url => {
+                this.sr_category = url
+            });
         }
     }
 }
@@ -364,6 +383,37 @@ export default {
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- MONTHLY SALES REPORT -->
+        <div class="mt-5 mb-4">
+            <div class="d-flex justify-content-center border-bottom border-black">
+                <h2 class="text-secondary">Monthly Sales Report</h2>
+            </div>
+            <!-- ACCORDIAN FOR ALL ORDERS -->
+            <div class="accordion mt-4 mb-4" id="accordionPanelsStayOpenExample">
+                <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <h1 class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelMonthlyReportList" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                    Monthly Report
+                    </h1>
+                </h2>
+                <div id="panelMonthlyReportList" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <div class="d-flex flex-column mt-5">
+                            <div class="d-flex flex-column">
+                                <h3 class="text-center">Products-Wise</h3>
+                                <img v-bind:src="sr_product" alt="Products Monthly Sales Report">
+                            </div>
+                            <div class="d-flex flex-column mt-5 ">
+                                <h3 class="text-center mt-5">Category-Wise</h3>
+                                <img v-bind:src="sr_category" alt="Products Monthly Sales Report">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
             </div>
         </div>
 

@@ -26,6 +26,7 @@ class ContextTask(celery.Task):
 
 celery.Task = ContextTask
 
+# -----------------------ALL PERIODIC BATCH JOBS------------------------------------------
 @celery.on_after_finalize.connect
 def setup_periodic_task(sender, **kwargs):
     # sender.add_periodic_task(5000, just_say_hello.s(), name="Runs every 5 seconds.")
@@ -35,7 +36,9 @@ def setup_periodic_task(sender, **kwargs):
 
     # MONTHLY REPORT TO BE SENT 1ST OF EVERY MONTH
     sender.add_periodic_task(crontab(day_of_month=1), send_sales_report.s())
+# ----------------------------------------------------------------------------------------
 
+# FOR TESTING ONLY
 @celery.task()
 def just_say_hello():
     print("Inside Task")
@@ -156,7 +159,8 @@ def sales_report():
     plt.savefig(filepath)
 
     return "Completed"
-            
+
+# ASYNC JOB FOR SENDING THE SALES REPORT
 @celery.task()
 def send_sales_report():
     users = [i.output for i in User.query.filter_by(role = "admin").all()] + [i.output for i in User.query.filter_by(role = "store_admin").all()]

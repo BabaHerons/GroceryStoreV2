@@ -262,6 +262,18 @@ class API{
     public export_products_csv(){
         return fetch(this.BASE_URL + '/products/csv', this.fetch_get())
     }
+    // -------------------------------------------------------------------
+
+    
+    // --------------------------MONTHLY SALES REPORT----------------------
+    public monthly_sales_report_products(){
+        return fetch(this.BASE_URL + '/monthly-sales-report/products', this.fetch_get())
+    }
+
+    public monthly_sales_report_category(){
+        return fetch(this.BASE_URL + '/monthly-sales-report/category', this.fetch_get())
+    }
+    // -------------------------------------------------------------------
 
 }
 
