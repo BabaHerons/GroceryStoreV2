@@ -221,6 +221,15 @@ export default {
                     this.get_all_products()
                 })
             }
+        },
+        export_product_list(){
+            API.export_products_csv()
+            .then(resp => resp.blob())
+            .then(blob => URL.createObjectURL(blob))
+            .then(url => {
+                window.open(url, '_blank');
+                URL.revokeObjectURL(url);
+            });
         }
     }
 }
@@ -301,6 +310,7 @@ export default {
         <div class="mt-4 mb-4">
             <div class="d-flex justify-content-between border-bottom border-black">
                 <h2 class="text-secondary">Product Management</h2>
+                <button class="btn btn-outline-primary mb-2" v-on:click="export_product_list">Export Product List</button>
                 <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
             </div>
             <div style="overflow-x:auto;">

@@ -5,6 +5,9 @@ from celery.schedules import crontab
 from flask_mail import Message
 from src.models import User, Order, OrderedItems, Product, Category
 from src.utils import current_date_time
+from src.custom_cache import get_all_product, get_all_product_by_sm
+import pandas as pd
+import os
 
 class ContextTask(celery.Task):
     def __call__(self, *args, **kwargs):
@@ -23,6 +26,7 @@ def just_say_hello():
     print(f"Hello, Manmay.")
     # return name
 
+# ASYNC JOB FOR SENDING INVOICE
 @celery.task()
 def send_invoice_email(order_id):
     orders = [
@@ -50,3 +54,16 @@ def send_invoice_email(order_id):
     mail.send(msg)
 
     return "Mail Sent."
+
+@celery.task()
+def export_products_csv(sm_id = None):
+    filepath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "exports/products.csv")
+    if sm_id == None:
+        products = get_all_product()
+    else:
+        products = get_all_product_by_sm(sm_id)
+    df = pd.DataFrame(products)
+    df.to_csv(rf"{filepath}", index=False)
+    # print(df)
+    # print(filepath)
+    return "Saved"

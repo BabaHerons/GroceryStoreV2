@@ -1,12 +1,13 @@
-from src import api, db, cache
+from src import api, db, cache, tasks
 from flask_restful import Resource
-from flask import request
+from flask import request, send_file
 from src.jwt import token_required
 from src.models import Product, Category
 from src.utils import args, current_date_time_to_id
 from flask_sse import sse
 from src.custom_cache import get_all_product, get_all_product_by_sm
 from datetime import datetime
+import os
 
 fields = ["name", "description", "category_id", "m_date", "e_date",
           "stock", "price", "unit", "created_by"]
@@ -112,6 +113,22 @@ class ProductEndpoint(Resource):
                 return {"message":"Deleted successfully"}
         return {"message":"Not Allowed"}, 401
     
+class ProductCSVEndpoint(Resource):
+    @token_required
+    def get(self):
+        if "role" in request.headers and "user_id" in request.headers:
+            role = request.headers["role"]
+            user_id = request.headers["user_id"]
+            if role == "admin":
+                job = tasks.export_products_csv.s().apply_async()
+            elif role == "store_admin":
+                job = tasks.export_products_csv.s(user_id).apply_async()
+            result= job.wait()
+            filepath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../exports/products.csv")
+            return send_file(filepath, mimetype='text/csv')
+            
+        
 
 
 api.add_resource(ProductEndpoint, "/products")
+api.add_resource(ProductCSVEndpoint, "/products/csv")

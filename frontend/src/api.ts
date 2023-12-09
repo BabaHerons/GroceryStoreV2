@@ -255,6 +255,14 @@ class API{
     public send_invoice_email(order_id:any){
         return fetch(this.BASE_URL + `/invoice/${order_id}`, this.fetch_get())
     }
+    // -------------------------------------------------------------------
+
+
+    // --------------------------EXPORT PRODUCTS CSV----------------------
+    public export_products_csv(){
+        return fetch(this.BASE_URL + '/products/csv', this.fetch_get())
+    }
+
 }
 
 export default new API

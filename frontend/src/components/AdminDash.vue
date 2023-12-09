@@ -273,6 +273,15 @@ export default {
                     break
                 }
             }
+        },
+        export_product_list(){
+            API.export_products_csv()
+            .then(resp => resp.blob())
+            .then(blob => URL.createObjectURL(blob))
+            .then(url => {
+                window.open(url, '_blank');
+                URL.revokeObjectURL(url);
+            });
         }
     }
 }
@@ -531,6 +540,8 @@ export default {
         <div class="mt-4 mb-4">
             <div class="d-flex justify-content-between border-bottom border-black">
                 <h2 class="text-secondary">Products List</h2>
+                <button class="btn btn-primary mb-2" v-on:click="export_product_list">Export Product List</button>
+
             </div>
             <!-- ACCORDIAN FOR ALL ORDERS -->
             <div class="accordion mt-4 mb-4" id="accordionPanelsStayOpenExample">
