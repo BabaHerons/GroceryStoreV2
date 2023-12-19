@@ -1,5 +1,5 @@
 # Project Structure
-
+```
 \---GroceryStoreV2
     |   .gitignore
     |   
@@ -81,4 +81,4 @@
                     Dashboard.vue
                     Home.vue
                     Login.vue
-                    
+```
