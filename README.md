@@ -4,108 +4,186 @@
 ![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
 
+# GroceryStoreV2 🛒  
+**Modern Full-Stack Grocery Store Management System**
 
-# GroceryStoreV2 🛒
+GroceryStoreV2 is a **role-based, full-stack web application** built as part of  
+**Modern Application Development – II (MAD-II)**.
 
-A full-stack grocery store management system built with a **Python backend** and a
-**modern SPA frontend**, designed to simulate real-world e-commerce workflows
-such as inventory management, cart handling, order processing, reporting, and authentication.
+It simulates a **real-world e-commerce grocery platform** with proper backend
+architecture, role separation, background jobs, caching, reporting, and a modern
+SPA frontend.
 
-This project emphasizes **backend architecture, data flow, and business logic**
-over simple CRUD operations.
-
----
+This project focuses on **business workflows and system design**, not just CRUD.
 
 ## 📌 Overview
 
-**GroceryStoreV2** is a multi-module grocery store platform that supports:
+GroceryStoreV2 supports **three user roles**:
 
-- User authentication and authorization
-- Product and category management
-- Cart and order lifecycle
-- Sales summaries and reports
-- Background tasks and caching
-- Server-generated documents (invoices, reports, emails)
-- SPA-based frontend dashboards
+- **Admin**
+- **Store / Inventory Manager**
+- **User (Customer)**
 
-The project is structured to resemble a **production-ready service**, not a demo app.
+The system allows users to browse products, manage carts, place orders,
+while admins and store managers manage inventory, categories, approvals,
+and reports.
 
----
+The application follows a **production-style architecture** with:
+- JWT authentication
+- Role-based access control (RBAC)
+- Modular backend APIs
+- Background tasks
+- Real-time notifications
+- Reporting & exports
 
-## 🧠 Architecture Diagram
+> ⚠️ Note: Initial user setup requires a one-time manual database bootstrap.
+> Please read the setup section before running the project.
 
+
+## 🧠 Architecture Overview
 ```mermaid
 flowchart TD
-    USER[User / Admin / Store Manager]
+    U[User / Admin / Store Manager]
 
-    UI[Vue SPA<br/>Vite + TypeScript]
-    ROUTER[Vue Router<br/>Role-based Navigation]
-    API_LAYER[API Abstraction<br/>api.ts]
+    FE[Vue SPA<br/>Vite + TypeScript]
+    ROUTER[Vue Router<br/>Role-based Views]
+    API[Central API Layer<br/>api.ts]
 
-    BACKEND[Python Backend]
-    AUTH[JWT Auth Layer]
-    ROUTES[Modular Routes<br/>auth, cart, order, product]
-    CACHE[Custom Cache]
-    TASKS[Background Tasks]
-    DB[(SQLite Database)]
-    TEMPLATES[HTML Templates<br/>Invoices & Emails]
+    BE[Python Backend]
+    AUTH[JWT Auth & RBAC]
+    ROUTES[Modular APIs<br/>Auth · Category · Product · Cart · Order]
+    CACHE[Custom Cache Layer]
+    TASKS[Background Jobs]
+    SSE[SSE Notifications]
+    DB[(SQLite DB)]
+    TPL[HTML Templates<br/>Invoices · Emails · Reports]
 
-    USER --> UI
-    UI --> ROUTER
-    ROUTER --> API_LAYER
-    API_LAYER --> BACKEND
+    U --> FE
+    FE --> ROUTER
+    ROUTER --> API
+    API --> BE
 
-    BACKEND --> AUTH
-    BACKEND --> ROUTES
+    BE --> AUTH
+    BE --> ROUTES
     ROUTES --> CACHE
     ROUTES --> TASKS
+    ROUTES --> SSE
     ROUTES --> DB
-    TASKS --> TEMPLATES
+    TASKS --> TPL
 ```
+The system follows a SPA + REST architecture where the frontend communicates
+with a Python backend through authenticated APIs. Role-based access control,
+background jobs, caching, and real-time notifications are handled server-side
+to simulate production-grade workflows.
 
 ## 🧠 High-Level Architecture
 
 ```text
 Frontend (SPA)
- └─ Vue.js + Vite
-     └─ Auth-aware routing
-     └─ Role-based dashboards
+ └─ Vue.js + TypeScript + Vite
+     ├─ Role-based dashboards
+     ├─ Centralized API layer
+     └─ SSE-based notifications
 
 Backend (API + Services)
- └─ Python (Flask-style architecture)
-     ├─ REST APIs
+ └─ Python (Flask-style)
      ├─ JWT Authentication
-     ├─ Background Tasks
-     ├─ Caching Layer
-     ├─ Database (SQLite)
-     ├─ HTML Templates
-     └─ Reporting & Exports
+     ├─ Modular REST APIs
+     ├─ Custom caching
+     ├─ Background jobs
+     ├─ Email & invoice templates
+     └─ SQLite database
 ```
 
-## 🚀 Key Features
+## 🚀 Core Features
 
-### Backend
+### 🔐 Authentication & Authorization
 
 * JWT-based authentication
-* Role-based access (Admin / Store Manager / User)
-* Product & category management
-* Cart and order processing
-* Background task execution
-* Custom caching layer
-* Sales analytics & summary endpoints
-* CSV export support
-* HTML email & invoice templates
-* Database-backed persistence
+* Role-based access control (RBAC)
+* Secure route protection on backend & frontend
 
-### Frontend
+**Roles:**
 
-* SPA built with Vue + TypeScript
-* Route-based navigation
-* Role-specific dashboards
-* Authentication-aware UI
-* Centralized API layer
+* Admin
+* Store Manager
+* User
 
----
+### 🧑‍💼 Admin Capabilities
+
+* Approve store manager accounts
+* Create, edit, delete categories
+* Approve / decline category change requests
+* View all users and orders
+* View monthly sales reports (product & category wise)
+* Export product data as CSV
+
+### 🏪 Store Manager Capabilities
+
+* Add, update, delete products
+* Request category creation, edit, or deletion
+* Export product inventory as CSV
+* View monthly sales reports
+* Receive real-time notifications for approvals
+
+### 🛒 User Capabilities
+
+* Browse products across categories
+* Search products by:
+
+  * Name
+  * Category
+  * Description
+  * Price
+  * Manufacture / expiry date
+* Add products to cart
+* Modify cart quantities
+* Place orders across multiple categories
+* View order history
+* Receive invoices via email
+
+## 🔔 Real-Time Notifications (SSE)
+
+Server-Sent Events (SSE) are used for:
+
+* New product notifications
+* Category approval / rejection alerts
+* Stock availability updates
+* Admin ↔ Store Manager communication
+
+No polling — updates are pushed in real time.
+
+## 🧩 Background Jobs & Reports
+
+### ⏰ Scheduled Jobs
+
+* **Daily reminder emails** to inactive users
+* **Monthly sales reports** sent to admins & managers
+
+### ⚙️ Async / Triggered Jobs
+
+* Product CSV export
+* Invoice email generation
+* Sales report generation (charts)
+
+## 📊 Reporting
+
+* Product-wise monthly sales report
+* Category-wise monthly sales report
+* Auto-generated visual charts
+* Downloadable CSV exports
+
+## ⚙️ Caching Strategy
+
+To improve performance:
+
+* Frequently accessed data is cached
+* Cache invalidation on updates
+* Keeps the application responsive under load
+
+> Redis is mentioned in the problem statement as a suggested tool.
+> For portability and local execution, caching is implemented using
+> a custom in-process cache while maintaining the same design principles.
 
 ## 🛠️ Tech Stack
 
@@ -113,21 +191,23 @@ Backend (API + Services)
 
 * Python
 * Flask-style architecture
-* SQLite (development database)
-* JWT for authentication
-* Background tasks
+* Flask-RESTful
+* JWT Authentication
+* SQLite
+* Server-Sent Events (SSE)
+* Flask-Mail
 * Custom caching
-* HTML templates for emails & invoices
+* Background jobs (async & scheduled)
+* HTML templates (emails & invoices)
 
 ### Frontend
 
-* Vue.js
+* Vue.js 3
 * TypeScript
 * Vite
 * Vue Router
-* Modular component architecture
-
----
+* Centralized API abstraction
+* Role-based dashboards
 
 ## 📁 Project Structure
 
@@ -159,51 +239,137 @@ GroceryStoreV2
     └── package.json
 ```
 
----
+## ✅ Requirement Coverage (MAD-II)
 
-## 🔐 Authentication & Authorization
+| Requirement                    | Status        |
+| ------------------------------ | ------------- |
+| User / Admin / Manager RBAC    | ✅ Implemented |
+| Category & Product Management  | ✅ Implemented |
+| Category Approval Workflow     | ✅ Implemented |
+| Search (price, date, category) | ✅ Implemented |
+| Cart & Multi-Category Purchase | ✅ Implemented |
+| Daily Reminder Job             | ✅ Implemented |
+| Monthly Activity Report        | ✅ Implemented |
+| CSV Export (Async)             | ✅ Implemented |
+| Performance Caching            | ✅ Implemented |
+| Real-Time Notifications        | ✅ Implemented |
 
-* JWT-based authentication
-* Tokens validated on protected routes
-* Role-aware dashboards:
+## ⚠️ Initial Setup & User(Admin) Bootstrapping (Important)
 
-  * Admin
-  * Store Manager
-  * User
+This project was originally developed earlier and is now being preserved
+as a **portfolio and academic reference project**.
 
-This ensures **separation of responsibilities** and secure access control.
+For this reason, **automatic user creation via UI is not enabled by default**.
+To run the application correctly, an initial user must be created manually.
 
----
+This setup is intentional and documented clearly below.
 
-## 🧩 Backend Highlights
 
-### 🔹 Modular Route Design
+## 🔐 Environment Configuration
 
-Each business domain (auth, product, cart, order, summary) has its own route module,
-keeping logic isolated and maintainable.
+Create a `.env` file inside:
 
----
+```text
+backend/src/.env
+```
+Add the following variables:
 
-### 🔹 Background Tasks
+```env
+FERNET_KEY=
+SECRET_TOKEN_KEY=
+APP_SECRET_KEY=
 
-Long-running or periodic operations (such as reports or reminders) are handled
-outside request-response cycles.
+MAIL_SERVER=
+MAIL_PORT=
+MAIL_USERNAME=
+MAIL_PASSWORD=
+```
 
----
 
-### 🔹 Custom Caching Layer
+## 🔒 Password Encryption (Manual Bootstrap)
 
-Caching is introduced to reduce redundant computation and improve response times.
+Passwords stored in the database are **encrypted using Fernet**.
 
----
+Since initial users must be created manually, password encryption must be
+performed **directly from the Python shell** using the same Fernet key
+defined in the `.env` file.
 
-### 🔹 Reporting & Templates
 
-* HTML templates for invoices and emails
-* Auto-generated sales and category reports
-* CSV exports for external analysis
+### Step 1: Ensure Fernet Key Exists
 
----
+Generate a Fernet key (only once):
+
+```python
+from cryptography.fernet import Fernet
+Fernet.generate_key()
+```
+Add the generated key to `.env`:
+
+```env
+FERNET_KEY=<generated_key_here>
+```
+
+
+### Step 2: Continue in Python Shell and Create Fernet Instance
+
+While still in the Python shell, initialize Fernet **using the same key**:
+
+```python
+from cryptography.fernet import Fernet
+import os
+
+FERNET_KEY = b"<paste_the_same_key_here>"
+fernet = Fernet(FERNET_KEY)
+```
+
+> ⚠️ The key used here **must exactly match** the value stored in `.env`.
+
+
+### Step 3: Encrypt the Password
+
+Encrypt the plaintext password:
+
+```python
+encrypted_password = fernet.encrypt("password".encode())
+```
+
+The resulting value should be stored **as-is** in the database.
+
+
+### Step 4: Insert Encrypted Password into Database
+
+Open the SQLite database:
+
+```text
+backend/instance/grocery_store_v2.db
+```
+
+Insert a user record manually with:
+
+* Encrypted password
+* Appropriate role (`admin`)
+* Active status enabled
+
+
+### 🔑 Important Notes
+
+* Password encryption is a **one-time bootstrap step**
+* After user creation, the application handles authentication normally
+* This approach preserves legacy security design without refactoring
+
+
+## 📝 Note
+
+This approach was chosen to:
+
+* Preserve the original architecture
+* Avoid refactoring legacy authentication flows
+* Keep the project focused on backend architecture, RBAC, and workflows
+
+All authentication, authorization, and role-based features work as expected
+after the initial user is created.
+
+
 
 ## ▶️ Running the Project
 
@@ -215,13 +381,12 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Backend runs on:
+Runs at:
 
 ```
 http://localhost:5000
 ```
 
----
 
 ### Frontend
 
@@ -231,8 +396,35 @@ npm install
 npm run dev
 ```
 
-Frontend runs on:
+Runs at:
 
 ```
-http://localhost:5173
+http://localhost:4200
 ```
+
+
+## 🧩 Design Decisions
+
+* Used **SSE instead of polling** for real-time updates
+* Centralized API handling on frontend for maintainability
+* Custom caching to avoid external dependencies
+* Clear separation of responsibilities using RBAC
+* Designed backend to resemble a production service
+
+
+## 📌 Notes
+
+* The application is designed for **local execution** as required by MAD-II
+* External services are intentionally minimized
+* Focus is on **architecture, workflows, and system behavior**
+
+
+## 📜 License
+
+This project is developed for academic and learning purposes.
+
+
+## 👨‍💻 Author
+
+**Manmay**
+Full-Stack Developer
