@@ -113,6 +113,7 @@ export default {
               } else {
                 this.register.view_otp = true
                 this.register.loading = false
+                console.log("Sign Up Data:", k)
               }
             })
           }
@@ -140,6 +141,7 @@ export default {
               } else {
                 this.register.view_otp = false
                 this.register.loading = false
+                console.log("Sign Up Data:", k)
                 this.login_page_success = "Sign Up Successfull."
                 setTimeout(() => {
                     this.login_page_success = ""
@@ -179,6 +181,7 @@ export default {
               } else {
                 this.sm_register.view_otp = true
                 this.sm_register.loading = false
+                console.log("Sign Up Data:", k)
               }
             })
           }

@@ -77,3 +77,29 @@ mail = Mail(app)
 
 # IMPORTING ALL THE ENDPOINTS
 from src.routes import auth, user, category, test, cart, product, order, summary
+
+def create_default_admin():
+    # try:
+        from src.models import User
+        admin = User.query.filter_by(full_name = "System Administrator").first()
+        if not admin:
+            print("Creating User")
+            user = User(
+                full_name="System Administrator",
+                email="admin@admin.com",
+                password=fernet.encrypt("admin".encode()),
+                role="admin"
+                )
+            db.session.add(user)
+            db.session.commit()
+            print("===========================")
+            print("Default Admin created")
+            print("===========================")
+            print()
+        else:
+            print("===========================")
+            print("Default Admin already created")
+            print("===========================")
+            print()
+    # except:
+    #     print("Error while creating default Admin.")

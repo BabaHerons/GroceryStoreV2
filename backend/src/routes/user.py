@@ -70,7 +70,7 @@ class Sign_Up(Resource):
                 mail.send(msg)
             except:
                 return {"message": "Email send error"}, 500
-            return {"message":"Email Sent"}
+            return {"message":"Email Sent", "otp": otp}
         return {"message":"Prohibitted Sign Up"}, 401
 
     def patch(self):
