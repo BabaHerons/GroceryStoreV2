@@ -254,15 +254,68 @@ GroceryStoreV2
 | Performance Caching            | ✅ Implemented |
 | Real-Time Notifications        | ✅ Implemented |
 
-## ⚠️ Initial Setup & User(Admin) Bootstrapping (Important)
 
-This project was originally developed earlier and is now being preserved
-as a **portfolio and academic reference project**.
+## ⚠️ Initial Setup & Default Admin Creation
 
-For this reason, **automatic user creation via UI is not enabled by default**.
-To run the application correctly, an initial user must be created manually.
+On first application startup, the database and tables are created automatically.
 
-This setup is intentional and documented clearly below.
+A **default admin user** is also created programmatically to bootstrap the system.
+This avoids manual database manipulation and preserves consistent encryption logic.
+
+### Default Admin Credentials
+
+```text
+Email: admin@admin.com
+Password: admin
+Role: admin
+````
+
+The password is securely encrypted using **Fernet encryption** with a key loaded
+from environment variables.
+
+> ⚠️ This user is created only if it does not already exist.
+
+
+## 🔧 Required Services
+
+### Redis (Mandatory)
+
+This project uses **Celery with Redis** for background jobs such as:
+- Email notifications
+- Report generation
+- Asynchronous tasks
+
+Redis **must be running** before starting the backend.
+
+#### Install Redis
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install redis-server
+sudo service redis-server start
+````
+
+**macOS (Homebrew):**
+
+```bash
+brew install redis
+brew services start redis
+```
+
+**Windows:**
+
+* Use WSL and install Redis inside Linux, **or**
+* Use a Redis-compatible Windows service
+
+Verify Redis is running:
+
+```bash
+redis-cli ping
+# Expected output: PONG
+```
+
+This is **mandatory** — otherwise Celery will fail.
 
 
 ## 🔐 Environment Configuration
@@ -286,104 +339,40 @@ MAIL_PASSWORD=
 ```
 
 
-## 🔒 Password Encryption (Manual Bootstrap)
+### Fernet Key Generation
 
-Passwords stored in the database are **encrypted using Fernet**.
-
-Since initial users must be created manually, password encryption must be
-performed **directly from the Python shell** using the same Fernet key
-defined in the `.env` file.
-
-
-### Step 1: Ensure Fernet Key Exists
-
-Generate a Fernet key (only once):
+Generate once using Python:
 
 ```python
 from cryptography.fernet import Fernet
 Fernet.generate_key()
 ```
-Add the generated key to `.env`:
 
-```env
-FERNET_KEY=<generated_key_here>
-```
-
-
-### Step 2: Continue in Python Shell and Create Fernet Instance
-
-While still in the Python shell, initialize Fernet **using the same key**:
-
-```python
-from cryptography.fernet import Fernet
-import os
-
-FERNET_KEY = b"<paste_the_same_key_here>"
-fernet = Fernet(FERNET_KEY)
-```
-
-> ⚠️ The key used here **must exactly match** the value stored in `.env`.
-
-
-### Step 3: Encrypt the Password
-
-Encrypt the plaintext password:
-
-```python
-encrypted_password = fernet.encrypt("password".encode())
-```
-
-The resulting value should be stored **as-is** in the database.
-
-
-### Step 4: Insert Encrypted Password into Database
-
-Open the SQLite database:
-
-```text
-backend/instance/grocery_store_v2.db
-```
-
-Insert a user record manually with:
-
-* Encrypted password
-* Appropriate role (`admin`)
-* Active status enabled
-
-
-### 🔑 Important Notes
-
-* Password encryption is a **one-time bootstrap step**
-* After user creation, the application handles authentication normally
-* This approach preserves legacy security design without refactoring
-
-
-## 📝 Note
-
-This approach was chosen to:
-
-* Preserve the original architecture
-* Avoid refactoring legacy authentication flows
-* Keep the project focused on backend architecture, RBAC, and workflows
-
-All authentication, authorization, and role-based features work as expected
-after the initial user is created.
-
+Paste the generated key into `FERNET_KEY` of `.env`.
 
 
 ## ▶️ Running the Project
 
 ### Backend
 
+Ensure **Redis is running**, then:
+
 ```bash
 cd backend
 pip install -r requirements.txt
 python main.py
+````
+
+On first run, you should see:
+
+```text
+Database initialized!
+Default Admin created
 ```
 
-Runs at:
+Backend runs at:
 
-```
+```text
 http://localhost:5000
 ```
 
@@ -414,7 +403,7 @@ http://localhost:4200
 
 ## 📌 Notes
 
-* The application is designed for **local execution** as required by MAD-II
+* The application is designed for **local execution** as required by MAD-II project from `IIT Madras` **BS Degree Program**
 * External services are intentionally minimized
 * Focus is on **architecture, workflows, and system behavior**
 
